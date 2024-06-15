@@ -14,10 +14,11 @@ nybbler is a real-time collaborative tool for [software reverse engineering](htt
 
 ## Required elements
 
+- Database: PostgreSQL
 - Framework: Vue
 - Third-party APIs:
   - Upload binary to VirusTotal and retrieve malware scan reports
-  - Maybe sync with GitHub
+  - Sync with GitHub
 - OAuth2: Sign in with GitHub
 
 ## Additional requirements
@@ -48,4 +49,4 @@ The following are the milestones we aim to achieve.
 
 - Users can associate manually reconstructed source code with symbols or sections of disassembly.
 - Users can import and export projects as downloadable files.
-- [if time permits] Users can connect a GitHub repo to any project for periodic sync (backup and restore).
+- Users can connect a GitHub repo to any project for periodic sync (backup and restore).
