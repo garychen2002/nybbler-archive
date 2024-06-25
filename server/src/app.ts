@@ -36,8 +36,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/api/projectss", projectRouter);
-app.use("/api/api/userss", userRouter);
+app.use("/api/projects", projectRouter);
+app.use("/api/users", userRouter);
 app.use("/api/binaries", binaryRouter);
 
 
