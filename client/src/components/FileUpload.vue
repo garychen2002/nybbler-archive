@@ -27,9 +27,8 @@ const submitFile = async () => {
 
   const formData = new FormData()
   formData.append('binary_file', selectedFile.value)
-  apiProjectsBinaries.post(formData, {
-    projectId: props.projectId
-  })
+  formData.append('projectId', props.projectId)
+  apiProjectsBinaries.post(formData);
 }
 </script>
 
