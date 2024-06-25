@@ -87,7 +87,7 @@ watch(selectedBinaryID, (newValue) => {
                   name: 'project-binary-symbol',
                   params: { projectId: project.id, binaryId: binary.id, symbolName: symbol.name }
                 }"
-                class="hover:text-primary"
+                class="va-link"
               >
                 {{ symbol.name }}
               </VaListItem>
