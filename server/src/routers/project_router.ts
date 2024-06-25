@@ -55,7 +55,7 @@ projectRouter.post("/binaries",
 
       // should create files in /server/outputs (filename.symbols.json)
       // can change to pass in the output as an argument or separate folder
-      const symbols_path = file.path + "symbols.json"
+      const symbols_path = file.path + "symbols.json";
       fs.readFile(symbols_path, async (err, content) =>  {
         if (err || !content) {
       // if created, read in and add the binary to database + related data models
@@ -63,23 +63,24 @@ projectRouter.post("/binaries",
             error: "Server error",
           });
         }
-        
-      })
-      try {
-        const binary = await Binary.create({
-          name: req.file.originalname,
-          file: req.file,
-          symbols: symbols_path,
-          ProjectId: req.body.projectId,
-        });
-        return res.json(binary);
-      }
-        catch {
-          return res.status(500).json({
-            error: "Server error",
-          });
+        else {
+          try {
+            const binary = await Binary.create({
+              name: file.originalname,
+              file: file,
+              symbols: symbols_path,
+              ProjectId: req.body.projectId,
+            });
+            return res.json(binary);
+          }
+            catch {
+              return res.status(500).json({
+                error: "Server error",
+              });
+            }
         }
-
+      });
+    
     }
     else {
       return res.status(422).json({
