@@ -5,7 +5,7 @@ import { Router } from "express";
 export const userRouter = Router();
 
 // Temporary user creation
-userRouter.post("/signup", async (req, res) => {
+userRouter.post("/", async (req, res) => {
   try {
     let user = await User.create({
       name: req.body.name,
@@ -25,6 +25,8 @@ userRouter.post("/:userId/create", async (req, res) => {
   try {
     let proj = await Project.create({
       name: req.body.name,
+      invitedIds: "[]",
+      binaryIds: "[]",
       UserId: userId
     });
     await proj.reload();

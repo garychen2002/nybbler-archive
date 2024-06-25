@@ -1,8 +1,18 @@
 import { sequelize } from "../../datasource.ts"
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import { User } from "./user.ts";
 
-export const Project = sequelize.define(
+class ProjectModel extends Model 
+{
+  public id!: number;
+  public name!: string;
+  public invitedIds!: string; //String representation of array
+  public binaryIds!: string; //String representation of array
+  public createdAt!: Date;
+  public updatedAt!: Date;
+}
+
+export const Project = sequelize.define<ProjectModel>(
   "Project",
   {
     name: {
@@ -10,12 +20,12 @@ export const Project = sequelize.define(
       allowNull: false,
     },
     invitedIds: {
-      type: DataTypes.JSON,
+      type: DataTypes.STRING,
       allowNull: true,
     },
-    binaryId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+    binaryIds: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

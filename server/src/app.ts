@@ -27,8 +27,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/project", projectRouter);
-app.use("/user", userRouter);
+app.use("/api/project", projectRouter);
+app.use("/api/user", userRouter);
 
 app.listen(PORT, () => {
   console.log(`HTTP server on port ${PORT}`);
