@@ -26,7 +26,7 @@ const submitFile = async () => {
   }
 
   const formData = new FormData()
-  formData.append('file', selectedFile.value)
+  formData.append('binary_file', selectedFile.value)
   apiProjectsBinaries.post(formData, {
     projectId: props.projectId
   })
@@ -35,7 +35,7 @@ const submitFile = async () => {
 
 <template>
   <div>
-    <input type="file" @change="handleFileUpload" />
+    <input type="file" name="binary_file" @change="handleFileUpload" />
     <button @click="submitFile">Upload</button>
   </div>
 </template>
