@@ -1,6 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import ProjectView from '@/views/ProjectView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,24 @@ const router = createRouter({
       path: '/projects',
       name: 'projects',
       component: ProjectsView
+    },
+    {
+      path: '/projects/:projectId',
+      name: 'project',
+      component: ProjectView,
+      props: true
+    },
+    {
+      path: '/projects/:projectId/binaries/:binaryId',
+      name: 'project-binary',
+      component: ProjectView,
+      props: true
+    },
+    {
+      path: '/projects/:projectId/binaries/:binaryId/symbols/:symbolName',
+      name: 'project-binary-symbol',
+      component: ProjectView,
+      props: true
     },
     {
       path: '/about',
