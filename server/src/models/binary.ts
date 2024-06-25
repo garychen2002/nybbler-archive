@@ -12,8 +12,10 @@ export const Binary = sequelize.define(
         file: {
             type: DataTypes.JSON,
             allowNull: false,
+        },
+        symbols: { // file path to symbols.json
+            type: DataTypes.STRING,
         }
-
     },
     {
         timestamps: true,

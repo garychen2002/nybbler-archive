@@ -50,32 +50,34 @@ projectRouter.post("/:projectId/binaries/add",
     if (req.file) {
       const file = req.file;
       console.log("file get");
+
+      await analyze_ghidra(file.path);
+
+      // should create files in /server/outputs (filename.symbols.json)
+      // can change to pass in the output as an argument or separate folder
+      const symbols_path = file.path + "symbols.json"
+      fs.readFile(symbols_path, async (err, content) =>  {
+        if (err || !content) {
+      // if created, read in and add the binary to database + related data models
+          return res.status(500).json({
+            error: "Server error",
+          });
+        }
+        
+      })
       try {
         const binary = await Binary.create({
           name: req.file.originalname,
           file: req.file,
+          symbols: symbols_path,
         });
-        await analyze_ghidra(file.path);
-
-        // should create files in /server/outputs (filename.symbols.json)
-        fs.readFile(file.path + "symbols.json", async (err, content) =>  {
-          if (!err && content) {
-        // if created, read in and add the binary to database + related data models
-            const data = JSON.parse(content.toString());
-            for (const key in data) {
-              console.log(`${key}: ${data[key].name}`); // debugging
-            }
-          }
-          else {
-            return res.status(500).json({
-              error: "Server error",
-            });
-          }
-        })
         return res.json(binary);
-      } catch (error) {
-        return res.status(500).json({ error: "server error" });
       }
+        catch {
+          return res.status(500).json({
+            error: "Server error",
+          });
+        }
 
     }
     else {
