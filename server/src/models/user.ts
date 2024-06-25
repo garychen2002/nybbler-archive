@@ -5,6 +5,7 @@ export class UserModel extends Model
 {
   public id!: number;
   public name!: string;
+  public email!: string;
 }
 
 export const User = sequelize.define<UserModel>(
@@ -14,5 +15,9 @@ export const User = sequelize.define<UserModel>(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    }
   }
 );

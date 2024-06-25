@@ -20,15 +20,7 @@ export const Project = sequelize.define<ProjectModel>(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    invitedIds: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    binaryIds: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    }
   },
   {
     timestamps: true,
