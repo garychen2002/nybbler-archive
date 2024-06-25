@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import DissassemblyListing from '@/components/DissassemblyListing.vue'
+import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
@@ -99,7 +99,7 @@ watch(selectedBinaryID, (newValue) => {
           <div class="flex flex-col gap-2 p-4">
             <h2 class="va-h6">Disassembly</h2>
 
-            <DissassemblyListing :project="project" :binary="binary" :symbol="symbol" />
+            <DisassemblyListing :project="project" :binary="binary" :symbol="symbol" />
           </div>
         </template>
       </VaLayout>
