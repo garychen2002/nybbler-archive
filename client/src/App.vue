@@ -4,11 +4,11 @@ import NavItem from './components/NavItem.vue'
 
 <template>
   <div class="flex h-screen w-screen flex-col items-center">
-    <main class="flex flex-grow justify-center px-12 pt-12">
+    <main class="flex w-full flex-grow justify-center px-12 pt-12">
       <RouterView />
     </main>
 
-    <footer class="flex-none px-8">
+    <footer class="w-full flex-none px-8">
       <VaNavbar color="#F4F8FA">
         <template #left>
           <NavItem label="nybbler" to="/" />
