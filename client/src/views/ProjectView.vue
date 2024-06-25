@@ -3,6 +3,7 @@ import DissassemblyListing from '@/components/DissassemblyListing.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
+import FileUpload from '@/components/FileUpload.vue'
 
 const props = defineProps<{
   projectId: string
@@ -66,7 +67,7 @@ watch(selectedBinaryID, (newValue) => {
     <h1 class="va-h6">
       {{ project.name }}
     </h1>
-
+    <FileUpload :projectId="props.projectId" />
     <VaTabs v-model="selectedBinaryID" class="items-start">
       <template #tabs>
         <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
