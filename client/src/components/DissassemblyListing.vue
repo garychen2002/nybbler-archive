@@ -10,7 +10,7 @@ defineProps<{
 </script>
 
 <template>
-  <textarea class="h-[50vh] w-[75vw]">
+  <textarea class="h-[50vh] w-[75vw] resize-none" disabled>
     0x10000   mov     here, there
   </textarea>
 </template>

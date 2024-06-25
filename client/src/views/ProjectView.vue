@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DissassemblyListing from '@/components/DissassemblyListing.vue'
 import { useProjectsStore } from '@/stores/projects'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
