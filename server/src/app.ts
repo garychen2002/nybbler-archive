@@ -1,3 +1,5 @@
+import 'dotenv/config'; // env file in server directory
+
 import bodyParser from "body-parser";
 import express from "express";
 import { sequelize } from "../datasource.ts";
@@ -27,8 +29,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/project", projectRouter);
-app.use("/user", userRouter);
+app.use("/projects", projectRouter);
+app.use("/users", userRouter);
 
 app.listen(PORT, () => {
   console.log(`HTTP server on port ${PORT}`);
