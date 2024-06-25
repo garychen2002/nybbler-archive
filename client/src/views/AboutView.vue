@@ -31,6 +31,6 @@ import { shuffle } from 'lodash'
           >Decompiler Explorer (inspiration)</a
         >
       </li>
-  </ul>
+    </ul>
   </div>
 </template>
