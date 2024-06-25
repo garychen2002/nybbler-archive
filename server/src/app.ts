@@ -7,6 +7,7 @@ import { Project } from "./models/project.ts";
 import { User } from "./models/user.ts";
 import { userRouter } from "./routers/user_router.ts";
 import { projectRouter } from "./routers/project_router.ts";
+import cors from "cors";
 
 export const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -15,6 +16,11 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(express.static("static"));
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true
+};
+app.use(cors(corsOptions));
 
 try {
   await sequelize.authenticate();
