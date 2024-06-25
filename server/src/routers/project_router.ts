@@ -179,6 +179,7 @@ projectRouter.post("/binaries",
             return res.json(binary);
           }
             catch {
+              // can delete?
               return res.status(500).json({
                 error: "Server error",
               });
