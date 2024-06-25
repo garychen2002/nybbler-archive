@@ -34,7 +34,24 @@ projectRouter.post("/", async (req, res) => {
 
     res.status(200).json({ proj });
   } catch (error) {
-    console.error("Error getting user projects:", error);
+    console.error("Error creating project:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+projectRouter.delete("/:projectId", async (req, res) => {
+  const { projectId } = req.params;
+  try {
+    let proj = await Project.findByPk(projectId);
+
+    if (proj) {
+      await proj.destroy();
+      return res.status(200).json(proj);
+    } else {
+      return res.status(404).json({ error: "Project not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -56,7 +73,7 @@ projectRouter.get("/:projectId/invitees", async (req, res) => {
       res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    console.error("Error getting user projects:", error);
+    console.error("Error getting invitees:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -88,7 +105,7 @@ projectRouter.post("/:projectId/invitees", async (req, res) => {
       res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    console.error("Error getting user projects:", error);
+    console.error("Error adding invitee:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -120,7 +137,7 @@ projectRouter.delete("/:projectId/invitees", async (req, res) => {
       res.status(404).json({ error: "Project not found" });
     }
   } catch (error) {
-    console.error("Error getting user projects:", error);
+    console.error("Error removing invitee:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
