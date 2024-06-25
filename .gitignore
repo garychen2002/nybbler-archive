@@ -31,3 +31,6 @@ nybbler.sqlite
 *.tsbuildinfo
 
 outputs
+uploads
+.env
+projects
