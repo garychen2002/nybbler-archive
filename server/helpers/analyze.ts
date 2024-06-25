@@ -24,6 +24,9 @@ export const analyze_ghidra = (file_to_analyze: string) =>
     // add more postScripts for each script here
     "-deleteProject"]
   const command = spawn(analyzeHeadless, args, {shell: process.platform == 'win32'});
+  command.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+  });
   command.on("close", () => resolve());
 });
 
