@@ -22,7 +22,9 @@ import { shuffle } from 'lodash'
       <li><a class="va-link" href="https://tailwindcss.com/">Tailwind CSS</a></li>
       <li><a class="va-link" href="https://github.com/posva/mande">mande</a></li>
       <li><a class="va-link" href="https://lodash.com/">Lodash</a></li>
-      <li>... add backend tech here ...</li>
+      <li><a class="va-link" href="https://expressjs.com/">Express</a></li>
+      <li><a class="va-link" href="https://sequelize.org/">Sequelize</a></li>
+      <li><a class="va-link" href="https://ghidra-sre.org/">Ghidra</a></li>
     </ul>
   </div>
 </template>
