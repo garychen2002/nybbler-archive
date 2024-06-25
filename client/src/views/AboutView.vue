@@ -25,13 +25,12 @@ import { shuffle } from 'lodash'
       <li><a class="va-link" href="https://expressjs.com/">Express</a></li>
       <li><a class="va-link" href="https://sequelize.org/">Sequelize</a></li>
       <li><a class="va-link" href="https://ghidra-sre.org/">Ghidra</a></li>
-      <li><a class="va-link" href="https://ghidra-sre.org/">Ghidra</a></li>
-    <li>Java Runtime and Development Kit</li>
-    <li>
-      <a class="va-link" href="https://github.com/decompiler-explorer/decompiler-explorer"
-        >Decompiler Explorer (inspiration)</a
-      >
-    </li>
+      <li>Java Runtime and Development Kit</li>
+      <li>
+        <a class="va-link" href="https://github.com/decompiler-explorer/decompiler-explorer"
+          >Decompiler Explorer (inspiration)</a
+        >
+      </li>
   </ul>
   </div>
 </template>
