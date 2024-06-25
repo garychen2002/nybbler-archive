@@ -3,26 +3,24 @@ import NavItem from './components/NavItem.vue'
 </script>
 
 <template>
-  <VaLayout :top="{ fixed: true }">
-    <template #top>
-      <header class="mx-8">
-        <VaNavbar color="#F4F8FA">
-          <template #left>
-            <NavItem label="nybbler" to="/" />
-            <NavItem label="about" to="/about" />
-          </template>
-          <template #center>
-            <NavItem label="projects" to="/projects" />
-          </template>
-          <template #right> </template>
-        </VaNavbar>
-      </header>
-    </template>
-
-    <main class="m-12">
+  <div class="flex h-screen w-screen flex-col items-center">
+    <main class="flex w-full flex-grow justify-center px-12 pt-12">
       <RouterView />
     </main>
-  </VaLayout>
+
+    <footer class="w-full flex-none px-8">
+      <VaNavbar color="#F4F8FA">
+        <template #left>
+          <NavItem label="nybbler" to="/" />
+          <NavItem label="about" to="/about" />
+        </template>
+        <template #center>
+          <NavItem label="projects" to="/projects" />
+        </template>
+        <template #right> </template>
+      </VaNavbar>
+    </footer>
+  </div>
 </template>
 
 <style scoped></style>

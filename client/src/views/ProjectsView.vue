@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ProjectItem from '@/components/ProjectItem.vue'
-import type { Project } from '@/models'
+import type { Project } from '@/models/project'
 import { useProjectsStore } from '@/stores/projects'
 import { watchEffect } from 'vue'
 
@@ -21,7 +21,7 @@ function deleteProject(project: Project) {
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex w-full items-start">
     <ProjectItem
       v-for="project in projectsStore.projects"
       :key="project.id"
