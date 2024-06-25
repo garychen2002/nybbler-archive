@@ -4,7 +4,6 @@ import { defaults, mande } from 'mande'
 // Documentation: https://github.com/posva/mande#readme
 
 const { VITE_API_BASE_URL } = import.meta.env
-console.dir(import.meta.env)
 
 export const apiProjects = mande(VITE_API_BASE_URL + '/api/projects')
 
