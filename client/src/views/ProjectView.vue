@@ -97,7 +97,7 @@ watch(selectedBinaryID, (newValue) => {
 
         <template #content>
           <div class="flex flex-col gap-2 p-4">
-            <h2 class="va-h6">Dissassembly</h2>
+            <h2 class="va-h6">Disassembly</h2>
 
             <DissassemblyListing :project="project" :binary="binary" :symbol="symbol" />
           </div>
