@@ -24,8 +24,10 @@ import { shuffle } from 'lodash'
     <li>... add backend tech here ...</li>
     <li><a class="va-link" href="https://ghidra-sre.org/">Ghidra</a></li>
     <li>Java Runtime and Development Kit</li>
-    <li><a class="va-link" href="https://github.com/decompiler-explorer/decompiler-explorer">Decompiler Explorer (inspiration)</a></li>
-
-
+    <li>
+      <a class="va-link" href="https://github.com/decompiler-explorer/decompiler-explorer"
+        >Decompiler Explorer (inspiration)</a
+      >
+    </li>
   </ul>
 </template>
