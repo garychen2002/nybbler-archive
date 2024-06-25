@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { apiProjects } from '../api'
+import { apiProjectsBinaries } from '../api'
 
 interface Props {
   projectId: string
@@ -27,7 +27,7 @@ const submitFile = async () => {
 
   const formData = new FormData()
   formData.append('file', selectedFile.value)
-  apiProjects.post(formData, {
+  apiProjectsBinaries.post(formData, {
     projectId: props.projectId
   })
 }

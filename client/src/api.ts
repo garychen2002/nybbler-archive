@@ -7,6 +7,7 @@ const { VITE_API_BASE_URL } = import.meta.env
 console.dir(import.meta.env)
 
 export const apiProjects = mande(VITE_API_BASE_URL + '/api/projects')
+export const apiProjectsBinaries = mande(VITE_API_BASE_URL + '/api/projects/binaries')
 
 export function setToken(token: string) {
   defaults.headers['Authorization'] = `Bearer ${token}`

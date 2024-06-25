@@ -44,7 +44,7 @@ projectRouter.delete("/:projectId/invitees/remove", async (req, res) => {
 });
 
 // Add binary
-projectRouter.post("/binaries/add",
+projectRouter.post("/binaries",
   upload.single('binary_file'),
   async (req, res) => {
     if (req.file) {
