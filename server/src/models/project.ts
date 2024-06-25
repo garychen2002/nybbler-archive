@@ -1,15 +1,17 @@
 import { sequelize } from "../../datasource.ts"
 import { DataTypes, Model } from "sequelize";
-import { User } from "./user.ts";
+import { User, UserModel } from "./user.ts";
 
 class ProjectModel extends Model 
 {
   public id!: number;
   public name!: string;
-  public invitedIds!: string; //String representation of array
-  public binaryIds!: string; //String representation of array
   public createdAt!: Date;
   public updatedAt!: Date;
+
+  public addUser!: (user: UserModel) => Promise<void>;
+  public removeUser!: (user: UserModel) => Promise<void>;
+  public getUsers!: () => Promise<UserModel[]>;
 }
 
 export const Project = sequelize.define<ProjectModel>(
@@ -36,3 +38,5 @@ export const Project = sequelize.define<ProjectModel>(
 //UserId field available in Project for owner id
 Project.belongsTo(User);
 User.hasMany(Project);
+User.belongsToMany(Project, { through: 'Invites' });
+Project.belongsToMany(User, { through: 'Invites' });

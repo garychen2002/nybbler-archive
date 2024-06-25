@@ -1,7 +1,13 @@
 import { sequelize } from "../../datasource.ts"
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 
-export const User = sequelize.define(
+export class UserModel extends Model 
+{
+  public id!: number;
+  public name!: string;
+}
+
+export const User = sequelize.define<UserModel>(
   "User",
   {
     name: {

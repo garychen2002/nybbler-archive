@@ -4,7 +4,42 @@ import { Router } from "express";
 
 export const projectRouter = Router();
 
-// Display invitees
+// Get projects given ownerId
+projectRouter.get("/", async (req, res) => {
+  const { ownerId } = req.body;
+  try {
+    const projects = await Project.findAll({
+      where: {
+        UserId: ownerId,
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error("Error getting user projects:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Create project with userId as owner
+projectRouter.post("/", async (req, res) => {
+  const { ownerId, name } = req.body;
+  try {
+    let proj = await Project.create({
+      name: name,
+      UserId: ownerId
+    });
+    await proj.reload();
+
+    res.status(200).json({ proj });
+  } catch (error) {
+    console.error("Error getting user projects:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Get invitees for project
 projectRouter.get("/:projectId/invitees", async (req, res) => {
   const { projectId } = req.params;
   try {
@@ -15,7 +50,8 @@ projectRouter.get("/:projectId/invitees", async (req, res) => {
     })
 
     if (proj) {
-      res.status(200).json(JSON.parse(proj.invitedIds));
+      const invitees = await proj.getUsers();
+      res.status(200).json(invitees);
     } else {
       res.status(404).json({ error: "Project not found" });
     }
@@ -28,7 +64,7 @@ projectRouter.get("/:projectId/invitees", async (req, res) => {
 // Add invitee
 projectRouter.post("/:projectId/invitees", async (req, res) => {
   const { projectId } = req.params;
-  const { inviteeId } = req.body;
+  const { userId } = req.body;
   try {
     let proj = await Project.findOne({
       where: {
@@ -37,15 +73,17 @@ projectRouter.post("/:projectId/invitees", async (req, res) => {
     })
 
     if (proj) {
-      let invitedIds = JSON.parse(proj.invitedIds);
-      if (!invitedIds.includes(inviteeId)) {
-        invitedIds.push(inviteeId);
-        proj.invitedIds = JSON.stringify(invitedIds);
+      const invitee = await User.findOne({
+        where: {
+          id: userId
+        }
+      });
 
-        await proj.save();
+      if (!invitee) {
+        return res.status(404).json({ error: "Invitee not found" });
       }
-
-      res.status(200).json(invitedIds);
+      await proj.addUser(invitee);
+      res.status(200).json(invitee);
     } else {
       res.status(404).json({ error: "Project not found" });
     }
@@ -58,7 +96,7 @@ projectRouter.post("/:projectId/invitees", async (req, res) => {
 // Remove invitee
 projectRouter.delete("/:projectId/invitees", async (req, res) => {
   const { projectId } = req.params;
-  const { inviteeId } = req.body;
+  const { userId } = req.body;
   try {
     let proj = await Project.findOne({
       where: {
@@ -67,17 +105,17 @@ projectRouter.delete("/:projectId/invitees", async (req, res) => {
     })
 
     if (proj) {
-      let invitedIds = JSON.parse(proj.invitedIds);
-      const index = invitedIds.indexOf(inviteeId);
-      console.log(index);
-      if (index > -1) {
-        invitedIds.splice(index, 1);
-        proj.invitedIds = JSON.stringify(invitedIds);
+      const invitee = await User.findOne({
+        where: {
+          id: userId
+        }
+      });
 
-        await proj.save();
+      if (!invitee) {
+        return res.status(404).json({ error: "Invitee not found" });
       }
-
-      res.status(200).json(invitedIds);
+      await proj.removeUser(invitee);
+      res.status(200).json(invitee);
     } else {
       res.status(404).json({ error: "Project not found" });
     }
