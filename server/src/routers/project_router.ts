@@ -5,7 +5,14 @@ import { analyze_ghidra } from "../../helpers/analyze.js";
 import { Binary } from "../models/binary.ts";
 import { Project } from "../models/project.ts";
 import { User } from "../models/user.ts";
-import { catchErrors, paginate, sendPaginatePage } from "../shared.ts";
+import {
+  STATUS_CREATED,
+  STATUS_INVALID_REQUEST,
+  STATUS_SERVER_ERROR,
+  catchErrors,
+  paginate,
+  sendPaginatePage,
+} from "../shared.ts";
 
 const upload = multer({ dest: "uploads/" });
 
@@ -41,7 +48,7 @@ projectRouter.post(
       ownerId: ownerId,
     });
 
-    res.json({ proj });
+    res.status(STATUS_CREATED).json({ proj });
   }),
 );
 
@@ -50,14 +57,10 @@ projectRouter.delete(
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
 
-    const proj = await Project.findByPk(projectId);
+    const proj = await Project.findByPk(projectId, { rejectOnEmpty: true });
 
-    if (proj) {
-      await proj.destroy();
-      return res.status(200).json(proj);
-    } else {
-      return res.status(404).json({ error: "Project not found" });
-    }
+    await proj.destroy();
+    return res.json(proj);
   }),
 );
 
@@ -149,7 +152,7 @@ projectRouter.post(
   upload.single("binary_file"),
   catchErrors(async (req, res) => {
     if (!req.file) {
-      return res.status(422).json({
+      return res.status(STATUS_INVALID_REQUEST).json({
         error: "Invalid input parameters. Expected file",
       });
     }
@@ -164,7 +167,7 @@ projectRouter.post(
     fs.readFile(symbols_path, async (err, content) => {
       if (err || !content) {
         // if created, read in and add the binary to database + related data models
-        return res.status(500).json({
+        return res.status(STATUS_SERVER_ERROR).json({
           error: "Server error",
         });
       } else {
@@ -178,7 +181,7 @@ projectRouter.post(
           return res.json(binary);
         } finally {
           // can delete?
-          return res.status(500).json({
+          return res.status(STATUS_SERVER_ERROR).json({
             error: "Server error",
           });
         }

@@ -65,7 +65,7 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
   limit: number,
 ): Promise<PaginatePage<ModelT, PrimaryKey> | { status: number; error: string }> {
   if (!(limit >= 1 && limit <= 100)) {
-    return { status: 422, error: "Invalid limit." };
+    return { status: STATUS_INVALID_REQUEST, error: "Invalid limit." };
   }
 
   const isAfterQuery = afterID && !beforeID;
