@@ -5,7 +5,8 @@ import { analyze_ghidra } from "../../helpers/analyze.js";
 import { Binary } from "../models/binary.ts";
 import { Project } from "../models/project.ts";
 import { User } from "../models/user.ts";
-import { catchErrors } from "../shared.ts";
+import { catchErrors, paginate, sendPaginatePage } from "../shared.ts";
+
 const upload = multer({ dest: "uploads/" });
 
 export const projectRouter = Router();
@@ -14,16 +15,18 @@ export const projectRouter = Router();
 projectRouter.get(
   "/",
   catchErrors(async (req, res) => {
-    const { ownerId } = req.body;
+    const ownerId = Number(req.query.ownerId);
+    const beforeId = Number(req.query.before);
+    const afterId = Number(req.query.after);
+    const limit = Number(req.query.limit);
 
-    const projects = await Project.findAll({
-      where: {
-        UserId: ownerId,
-      },
-      order: [["createdAt", "DESC"]],
-    });
-
-    res.status(200).json(projects);
+    const page = await paginate(
+      { model: Project, primaryKey: "id", where: { ownerId } },
+      beforeId,
+      afterId,
+      limit,
+    );
+    sendPaginatePage(res, page);
   }),
 );
 
@@ -35,11 +38,10 @@ projectRouter.post(
 
     const proj = await Project.create({
       name: name,
-      UserId: ownerId,
+      ownerId: ownerId,
     });
-    await proj.reload();
 
-    res.status(200).json({ proj });
+    res.json({ proj });
   }),
 );
 
@@ -63,20 +65,29 @@ projectRouter.delete(
 projectRouter.get(
   "/:projectId/invitees",
   catchErrors(async (req, res) => {
-    const { projectId } = req.params;
+    const projectId = Number(req.params.projectId);
+    const beforeId = Number(req.query.before);
+    const afterId = Number(req.query.after);
+    const limit = Number(req.query.limit);
 
-    const proj = await Project.findOne({
-      where: {
-        id: projectId,
+    // https://sequelize.org/docs/v6/advanced-association-concepts/eager-loading/#complex-where-clauses-at-the-top-level
+    const page = await paginate(
+      {
+        model: User,
+        primaryKey: "id",
+        include: {
+          model: Project,
+          as: "invitedProjects",
+          attributes: ["id"],
+          through: { attributes: [] },
+        },
+        where: { "$invitedProjects.id$": projectId },
       },
-    });
-
-    if (proj) {
-      const invitees = await proj.getUsers();
-      res.status(200).json(invitees);
-    } else {
-      res.status(404).json({ error: "Project not found" });
-    }
+      beforeId,
+      afterId,
+      limit,
+    );
+    sendPaginatePage(res, page);
   }),
 );
 
@@ -91,23 +102,18 @@ projectRouter.post(
       where: {
         id: projectId,
       },
+      rejectOnEmpty: true,
     });
 
-    if (proj) {
-      const invitee = await User.findOne({
-        where: {
-          id: userId,
-        },
-      });
+    const invitee = await User.findOne({
+      where: {
+        id: userId,
+      },
+      rejectOnEmpty: true,
+    });
 
-      if (!invitee) {
-        return res.status(404).json({ error: "Invitee not found" });
-      }
-      await proj.addUser(invitee);
-      res.status(200).json(invitee);
-    } else {
-      res.status(404).json({ error: "Project not found" });
-    }
+    await proj.$add("invitees", invitee);
+    res.json(invitee);
   }),
 );
 
@@ -122,23 +128,18 @@ projectRouter.delete(
       where: {
         id: projectId,
       },
+      rejectOnEmpty: true,
     });
 
-    if (proj) {
-      const invitee = await User.findOne({
-        where: {
-          id: userId,
-        },
-      });
+    const invitee = await User.findOne({
+      where: {
+        id: userId,
+      },
+      rejectOnEmpty: true,
+    });
 
-      if (!invitee) {
-        return res.status(404).json({ error: "Invitee not found" });
-      }
-      await proj.removeUser(invitee);
-      res.status(200).json(invitee);
-    } else {
-      res.status(404).json({ error: "Project not found" });
-    }
+    await proj.$remove("invitees", invitee);
+    res.json(invitee);
   }),
 );
 
@@ -147,42 +148,41 @@ projectRouter.post(
   "/binaries",
   upload.single("binary_file"),
   catchErrors(async (req, res) => {
-    if (req.file) {
-      const file = req.file;
-      console.log("file get");
-
-      await analyze_ghidra(file.path);
-
-      // should create files in /server/outputs (filename.symbols.json)
-      // can change to pass in the output as an argument or separate folder
-      const symbols_path = file.path + "symbols.json";
-      fs.readFile(symbols_path, async (err, content) => {
-        if (err || !content) {
-          // if created, read in and add the binary to database + related data models
-          return res.status(500).json({
-            error: "Server error",
-          });
-        } else {
-          try {
-            const binary = await Binary.create({
-              name: file.originalname,
-              file: file,
-              symbols: symbols_path,
-              ProjectId: req.body.projectId,
-            });
-            return res.json(binary);
-          } catch {
-            // can delete?
-            return res.status(500).json({
-              error: "Server error",
-            });
-          }
-        }
-      });
-    } else {
+    if (!req.file) {
       return res.status(422).json({
         error: "Invalid input parameters. Expected file",
       });
     }
+
+    const file = req.file;
+
+    await analyze_ghidra(file.path);
+
+    // should create files in /server/outputs (filename.symbols.json)
+    // can change to pass in the output as an argument or separate folder
+    const symbols_path = file.path + "symbols.json";
+    fs.readFile(symbols_path, async (err, content) => {
+      if (err || !content) {
+        // if created, read in and add the binary to database + related data models
+        return res.status(500).json({
+          error: "Server error",
+        });
+      } else {
+        try {
+          const binary = await Binary.create({
+            name: file.originalname,
+            file: file,
+            symbols: symbols_path,
+            projectId: req.body.projectId,
+          });
+          return res.json(binary);
+        } finally {
+          // can delete?
+          return res.status(500).json({
+            error: "Server error",
+          });
+        }
+      }
+    });
   }),
 );

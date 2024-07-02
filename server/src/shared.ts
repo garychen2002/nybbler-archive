@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { pick } from "lodash-es";
 import {
   Attributes,
   EmptyResultError,
@@ -69,10 +70,9 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
 
   const isAfterQuery = afterID && !beforeID;
 
-  /** @type any */
   let [total, items] = await Promise.all([
     // Total
-    model.count({ where }),
+    model.count({ include, where }),
     // Items
     model.findAll({
       attributes,
@@ -84,6 +84,7 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
           [Op.gte]: afterID || 1,
         },
       },
+      subQuery: false,
       limit,
       // If this is a pure "after=" query, return oldest matching items.
       // In every other case (pure "before=", both "after=" and "before=", or neither),
@@ -98,7 +99,9 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
     if (isAfterQuery) {
       older = await model.findOne({
         attributes: [primaryKey],
+        include,
         where,
+        subQuery: false,
         order: [[primaryKey, "DESC"]],
       });
       newer = null;
@@ -106,7 +109,9 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
       older = null;
       newer = await model.findOne({
         attributes: [primaryKey],
+        include,
         where,
+        subQuery: false,
         order: [[primaryKey, "ASC"]],
       });
     }
@@ -118,20 +123,28 @@ export async function paginate<ModelT extends Model, PrimaryKey extends ModelAtt
       // Older
       model.findOne({
         attributes: [primaryKey],
+        include,
         where: { ...where, [primaryKey]: { [Op.lt]: oldestSelected } },
+        subQuery: false,
         order: [[primaryKey, "DESC"]],
       }),
 
       // Newer
       model.findOne({
         attributes: [primaryKey],
+        include,
         where: {
           ...where,
           [primaryKey]: { [Op.gt]: newestSelected },
         },
+        subQuery: false,
         order: [[primaryKey, "ASC"]],
       }),
     ]);
+
+    // Remove included associations, if any (which may have been used in the `where` clause)
+    if (older) older = pick(older, primaryKey);
+    if (newer) newer = pick(newer, primaryKey);
   }
 
   return {
