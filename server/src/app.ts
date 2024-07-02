@@ -1,14 +1,13 @@
 import "dotenv/config"; // env file in server directory
 
 import bodyParser from "body-parser";
+import cors from "cors";
 import express from "express";
 import { sequelize } from "../datasource.ts";
-import { Project } from "./models/project.ts";
-import { User } from "./models/user.ts";
-import { userRouter } from "./routers/user_router.ts";
-import { projectRouter } from "./routers/project_router.ts";
-import cors from "cors";
+import { initModels } from "./models/_init.ts";
 import { binaryRouter } from "./routers/binary_router.ts";
+import { projectRouter } from "./routers/project_router.ts";
+import { userRouter } from "./routers/user_router.ts";
 
 export const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -25,6 +24,7 @@ app.use(cors(corsOptions));
 
 try {
   await sequelize.authenticate();
+  initModels();
   await sequelize.sync({ alter: { drop: false } });
   console.log("Connection has been established successfully.");
 } catch (error) {
