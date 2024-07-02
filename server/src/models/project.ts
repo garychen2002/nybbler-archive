@@ -1,9 +1,8 @@
-import { sequelize } from "../../datasource.ts"
+import { sequelize } from "../../datasource.ts";
 import { DataTypes, Model } from "sequelize";
 import { User, UserModel } from "./user.ts";
 
-class ProjectModel extends Model 
-{
+class ProjectModel extends Model {
   public id!: number;
   public name!: string;
   public createdAt!: Date;
@@ -20,7 +19,7 @@ export const Project = sequelize.define<ProjectModel>(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    }
+    },
   },
   {
     timestamps: true,
@@ -30,5 +29,5 @@ export const Project = sequelize.define<ProjectModel>(
 //UserId field available in Project for owner id
 Project.belongsTo(User);
 User.hasMany(Project);
-User.belongsToMany(Project, { through: 'Invites' });
-Project.belongsToMany(User, { through: 'Invites' });
+User.belongsToMany(Project, { through: "Invites" });
+Project.belongsToMany(User, { through: "Invites" });
