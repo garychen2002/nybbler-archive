@@ -79,10 +79,13 @@ watch(selectedBinaryID, (newValue) => {
 <template>
   <VaInnerLoading :loading="!project">
     <div class="w-full" v-if="project">
-      <h1 class="va-h6">
-        {{ project.name }}
-      </h1>
-      <FileUpload :projectId="props.projectId" />
+      <div class="mb-4 flex">
+        <h1 class="va-h6">
+          {{ project.name }}
+        </h1>
+        <FileUpload :projectId="props.projectId" />
+      </div>
+
       <VaTabs v-model="selectedBinaryID" class="items-start">
         <template #tabs>
           <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { VaButton, VaFileUpload, useToast } from 'vuestic-ui'
 import { apiProjectsBinaries } from '../services/api'
 
 interface Props {
@@ -8,33 +9,60 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const selectedFile = ref<File | null>(null)
+const selectedFiles = ref<File[]>([])
+const showUploadModal = ref(false)
 
-const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    selectedFile.value = target.files[0]
-  } else {
-    selectedFile.value = null
-  }
-}
+const toast = useToast()
 
 const submitFile = async () => {
-  if (!selectedFile.value) {
+  if (!selectedFiles.value.length) {
     alert('No file selected')
     return
   }
 
-  const formData = new FormData()
-  formData.append('binary_file', selectedFile.value)
-  formData.append('projectId', props.projectId)
-  apiProjectsBinaries.post(formData)
+  showUploadModal.value = false
+
+  await Promise.all(
+    selectedFiles.value.map(async (file) => {
+      const toastID = toast.init({ message: `Analyzing ${file.name}…`, duration: -1 })
+
+      const formData = new FormData()
+      formData.append('binary_file', file)
+      formData.append('projectId', props.projectId)
+      try {
+        await apiProjectsBinaries.post(formData)
+        toast.notify({ message: `Analysis of ${file.name} complete.`, color: 'success' })
+      } catch (error) {
+        toast.notify({ message: `Analysis of ${file.name} failed`, color: 'danger' })
+        console.error(error)
+      } finally {
+        toast.close(toastID!)
+      }
+    })
+  )
+
+  selectedFiles.value = []
 }
 </script>
 
 <template>
-  <div>
-    <input type="file" name="binary_file" @change="handleFileUpload" />
-    <button @click="submitFile">Upload</button>
-  </div>
+  <VaButton class="ms-auto" @click="() => (showUploadModal = true)">Upload Binary</VaButton>
+
+  <VaModal v-model="showUploadModal" hide-default-actions>
+    <h3 class="va-h6 mb-4">Upload binary</h3>
+    <VaFileUpload
+      v-model="selectedFiles"
+      dropzone
+      drop-zone-text="drop here, or"
+      upload-button-text="choose"
+      class="cursor-default"
+    />
+
+    <template #footer>
+      <VaButton class="me-3" preset="secondary" @click="() => (showUploadModal = false)">
+        Cancel
+      </VaButton>
+      <VaButton color="primary" @click="submitFile"> Upload </VaButton>
+    </template>
+  </VaModal>
 </template>
