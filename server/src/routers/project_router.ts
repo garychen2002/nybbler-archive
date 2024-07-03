@@ -74,6 +74,18 @@ projectRouter.get(
   }),
 );
 
+projectRouter.patch(
+  "/:projectId",
+  catchErrors(async (req, res) => {
+    const projectId = Number(req.params.projectId);
+
+    const project = await Project.findByPk(projectId, { rejectOnEmpty: true });
+    project.update(req.body, { fields: ["name"] });
+
+    res.json(project);
+  }),
+);
+
 // Create project with userId as owner
 projectRouter.post(
   "/",
