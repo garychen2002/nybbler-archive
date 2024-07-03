@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { apiProjectsBinaries } from '../api'
+import { apiProjectsBinaries } from '../services/api'
 
 interface Props {
   projectId: string
