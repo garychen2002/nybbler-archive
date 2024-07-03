@@ -48,27 +48,23 @@ function deleteProject(project: Project) {
     />
   </div>
 
-  <VaModal
-    v-model="showRenameModal"
-    ok-text="Rename"
-    :ok-disabled="!(renameForm?.isValid ?? false)"
-    @ok="submitRenameForm"
-  >
-    <template v-if="projectToRename">
-      <h3 class="va-h6 mb-4">Rename project</h3>
-      <VaForm
-        ref="renameForm"
-        class="flex flex-col items-baseline gap-6"
-        @submit="submitRenameForm"
-      >
-        <VaInput
-          autofocus
-          ref="renameFormNameField"
-          class="w-full"
-          v-model="projectToRename.name"
-          :rules="[(value) => (value && value.length > 0) || 'Enter a name']"
-        />
-      </VaForm>
+  <VaModal v-model="showRenameModal" hide-default-actions>
+    <h3 class="va-h6 mb-4">rename project</h3>
+    <VaForm ref="renameForm" class="flex flex-col items-baseline gap-6" @submit="submitRenameForm">
+      <VaInput
+        v-if="projectToRename"
+        v-model="projectToRename.name"
+        ref="renameFormNameField"
+        class="w-full"
+        autofocus
+      />
+    </VaForm>
+
+    <template #footer>
+      <VaButton class="me-3" preset="secondary" @click="() => (showRenameModal = false)">
+        cancel
+      </VaButton>
+      <VaButton color="primary" @click="submitRenameForm"> rename </VaButton>
     </template>
   </VaModal>
 </template>

@@ -46,10 +46,10 @@ const submitFile = async () => {
 </script>
 
 <template>
-  <VaButton class="ms-auto" @click="() => (showUploadModal = true)">Upload Binary</VaButton>
+  <VaButton class="ms-auto" @click="() => (showUploadModal = true)">upload binary</VaButton>
 
   <VaModal v-model="showUploadModal" hide-default-actions>
-    <h3 class="va-h6 mb-4">Upload binary</h3>
+    <h3 class="va-h6 mb-4">upload binary</h3>
     <VaFileUpload
       v-model="selectedFiles"
       dropzone
@@ -60,9 +60,9 @@ const submitFile = async () => {
 
     <template #footer>
       <VaButton class="me-3" preset="secondary" @click="() => (showUploadModal = false)">
-        Cancel
+        cancel
       </VaButton>
-      <VaButton color="primary" @click="submitFile"> Upload </VaButton>
+      <VaButton color="primary" @click="submitFile"> upload </VaButton>
     </template>
   </VaModal>
 </template>

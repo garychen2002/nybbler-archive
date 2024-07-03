@@ -96,7 +96,7 @@ watch(selectedBinaryID, (newValue) => {
         <VaLayout v-if="selectedBinary" class="mt-4">
           <template #left>
             <div class="flex flex-col gap-2 p-4">
-              <h2 class="va-h6">Symbols</h2>
+              <h2 class="va-h6">symbols</h2>
 
               <div class="h-[55vh] rounded-sm border-2 border-solid border-primary p-2">
                 <VaList class="h-full overflow-auto text-xs">
@@ -125,7 +125,7 @@ watch(selectedBinaryID, (newValue) => {
 
           <template #content>
             <div class="flex flex-col gap-2 p-4">
-              <h2 class="va-h6">Disassembly</h2>
+              <h2 class="va-h6">disassembly</h2>
 
               <DisassemblyListing :project="project" :binary="selectedBinary" :address="address" />
             </div>
