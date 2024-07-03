@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { pick } from "lodash-es";
 import {
   Attributes,
@@ -19,6 +19,18 @@ export const STATUS_FORBIDDEN = 403;
 export const STATUS_NOT_FOUND = 404;
 export const STATUS_INVALID_REQUEST = 422;
 export const STATUS_SERVER_ERROR = 500;
+
+/** Middleware that ensures the request is authenticated. */
+export async function requireAuthenticated(req: Request, res: Response, next: NextFunction) {
+  const { user } = req.session;
+  if (!user) {
+    return res
+      .status(STATUS_AUTHENTICATION_REQUIRED)
+      .json({ error: "Session is expired or invalid." });
+  }
+
+  return next();
+}
 
 export const catchErrors =
   (body: (req: Request, res: Response) => Promise<any>) => async (req: Request, res: Response) => {
