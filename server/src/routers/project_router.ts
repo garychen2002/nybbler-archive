@@ -1,9 +1,11 @@
 import { Router } from "express";
 import fs from "fs";
+import { readFile } from "fs/promises";
 import multer from "multer";
 import { analyze_ghidra } from "../../helpers/analyze.js";
 import { Binary } from "../models/binary.ts";
 import { Project } from "../models/project.ts";
+import { Symbol } from "../models/symbol.ts";
 import { User } from "../models/user.ts";
 import {
   STATUS_CREATED,
@@ -18,22 +20,56 @@ const upload = multer({ dest: "uploads/" });
 
 export const projectRouter = Router();
 
-// Get projects given ownerId
 projectRouter.get(
   "/",
   catchErrors(async (req, res) => {
-    const ownerId = Number(req.query.ownerId);
+    const ownerId = req.session.user!.id;
     const beforeId = Number(req.query.before);
     const afterId = Number(req.query.after);
     const limit = Number(req.query.limit);
 
     const page = await paginate(
-      { model: Project, primaryKey: "id", where: { ownerId } },
+      {
+        model: Project,
+        primaryKey: "id",
+        where: { ownerId },
+        include: [
+          {
+            model: User,
+            as: "invitees",
+            through: { attributes: [] },
+          },
+        ],
+      },
       beforeId,
       afterId,
       limit,
     );
     sendPaginatePage(res, page);
+  }),
+);
+
+projectRouter.get(
+  "/:projectId",
+  catchErrors(async (req, res) => {
+    const projectId = Number(req.params.projectId);
+
+    const project = await Project.findByPk(projectId, {
+      include: [
+        {
+          model: User,
+          as: "invitees",
+          through: { attributes: [] },
+        },
+        {
+          model: Binary,
+          include: [Symbol],
+        },
+      ],
+      rejectOnEmpty: true,
+    });
+
+    res.json(project);
   }),
 );
 
@@ -163,7 +199,7 @@ projectRouter.post(
 
     // should create files in /server/outputs (filename.symbols.json)
     // can change to pass in the output as an argument or separate folder
-    const symbols_path = file.path + "symbols.json";
+    const symbols_path = file.path + ".symbols.json";
     fs.readFile(symbols_path, async (err, content) => {
       if (err || !content) {
         // if created, read in and add the binary to database + related data models
@@ -175,11 +211,15 @@ projectRouter.post(
           const binary = await Binary.create({
             name: file.originalname,
             file: file,
-            symbols: symbols_path,
             projectId: req.body.projectId,
           });
+
+          const symbolsJSON = await readFile(symbols_path, "utf-8");
+          const symbols: Partial<Symbol>[] = JSON.parse(symbolsJSON);
+          await Symbol.bulkCreate(symbols.map((symbol) => ({ ...symbol, binaryId: binary.id })));
+
           return res.json(binary);
-        } finally {
+        } catch {
           // can delete?
           return res.status(STATUS_SERVER_ERROR).json({
             error: "Server error",

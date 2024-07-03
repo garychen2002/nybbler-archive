@@ -1,5 +1,14 @@
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from "sequelize-typescript";
 import { Project } from "./project.ts";
+import { Symbol } from "./symbol.ts";
 
 @Table
 export class Binary extends Model<Binary> {
@@ -11,10 +20,6 @@ export class Binary extends Model<Binary> {
   @Column(DataType.JSON)
   declare file: Express.Multer.File;
 
-  /** Path to symbols.json file. */
-  @Column
-  declare symbols: string;
-
   /** Owning project. */
   @BelongsTo(() => Project, { onDelete: "cascade" })
   project!: Project;
@@ -22,5 +27,9 @@ export class Binary extends Model<Binary> {
   /** Owning project ID. */
   @ForeignKey(() => Project)
   @Column
-  projectId!: number;
+  declare projectId: number;
+
+  /** Symbols found in this binary. */
+  @HasMany(() => Symbol)
+  symbols!: Symbol[];
 }
