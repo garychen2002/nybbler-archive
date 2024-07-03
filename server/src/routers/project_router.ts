@@ -1,6 +1,5 @@
 import { Router } from "express";
-import fs from "fs";
-import { readFile } from "fs/promises";
+import { keyBy } from "lodash-es";
 import multer from "multer";
 import { analyze_ghidra } from "../../helpers/analyze.js";
 import { Binary } from "../models/binary.ts";
@@ -68,6 +67,8 @@ projectRouter.get(
       ],
       rejectOnEmpty: true,
     });
+
+    console.log("   \n\n\n!!!!!!!1    done  !!!!!!!!!!!!!\n\n       ");
 
     res.json(project);
   }),
@@ -195,37 +196,34 @@ projectRouter.post(
 
     const file = req.file;
 
-    await analyze_ghidra(file.path);
+    const { symbols, codeUnits } = await analyze_ghidra(file.path);
+    if (!symbols || !codeUnits) {
+      return res.status(STATUS_SERVER_ERROR).json({ error: "Server error" });
+    }
 
-    // should create files in /server/outputs (filename.symbols.json)
-    // can change to pass in the output as an argument or separate folder
-    const symbols_path = file.path + ".symbols.json";
-    fs.readFile(symbols_path, async (err, content) => {
-      if (err || !content) {
-        // if created, read in and add the binary to database + related data models
-        return res.status(STATUS_SERVER_ERROR).json({
-          error: "Server error",
-        });
-      } else {
-        try {
-          const binary = await Binary.create({
-            name: file.originalname,
-            file: file,
-            projectId: req.body.projectId,
-          });
-
-          const symbolsJSON = await readFile(symbols_path, "utf-8");
-          const symbols: Partial<Symbol>[] = JSON.parse(symbolsJSON);
-          await Symbol.bulkCreate(symbols.map((symbol) => ({ ...symbol, binaryId: binary.id })));
-
-          return res.json(binary);
-        } catch {
-          // can delete?
-          return res.status(STATUS_SERVER_ERROR).json({
-            error: "Server error",
-          });
+    const symbolsByAddress = keyBy(symbols, ({ address }) => address);
+    const foundSymbols = [];
+    const disassembly = codeUnits
+      .map(({ address, instruction }) => {
+        let label = "";
+        if (address in symbolsByAddress) {
+          const symbol = symbolsByAddress[address];
+          label = `${symbol.name}:\n`;
+          foundSymbols.push(symbol);
         }
-      }
+
+        return `${label}\t${address}\t${instruction}`;
+      })
+      .join("\n");
+
+    const binary = await Binary.create({
+      name: file.originalname,
+      file: file,
+      projectId: req.body.projectId,
+      disassembly,
     });
+    await Symbol.bulkCreate(foundSymbols.map((symbol) => ({ ...symbol, binaryId: binary.id })));
+
+    return res.json(binary);
   }),
 );

@@ -32,4 +32,8 @@ export class Binary extends Model<Binary> {
   /** Symbols found in this binary. */
   @HasMany(() => Symbol)
   symbols!: Symbol[];
+
+  /** Disassembled version of code in the binary. */
+  @Column
+  declare disassembly: string;
 }

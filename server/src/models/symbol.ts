@@ -7,7 +7,7 @@ export class Symbol extends Model<Symbol> {
   declare name: string;
 
   @Column
-  declare address: number;
+  declare address: string;
 
   @Column
   declare type: string;
