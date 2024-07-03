@@ -16,9 +16,7 @@ defineEmits<{
     <div class="va-card__title font-bold">{{ project.name }}</div>
     <VaCardContent class="text-sm" v-if="project.invitees.length">
       <span class="font-semibold">Collaborators: </span>
-      <span v-for="invitee in project.invitees" :key="invitee.id">
-        {{ invitee.name }}
-      </span>
+      {{ project.invitees.map(({ name }) => name).join(', ') }}
     </VaCardContent>
     <VaCardActions>
       <VaButton preset="secondary" @click.prevent="$emit('rename', project)"> rename </VaButton>
