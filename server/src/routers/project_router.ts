@@ -90,11 +90,11 @@ projectRouter.patch(
 projectRouter.post(
   "/",
   catchErrors(async (req, res) => {
-    const { ownerId, name } = req.body;
+    const { name } = req.body;
 
     const proj = await Project.create({
       name: name,
-      ownerId: ownerId,
+      ownerId: req.session.user!.id,
     });
 
     res.status(STATUS_CREATED).json({ proj });
