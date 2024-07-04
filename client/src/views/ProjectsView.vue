@@ -4,7 +4,7 @@ import type { Project } from '@/models/project'
 import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
-import { VaForm, VaInput, useForm } from 'vuestic-ui'
+import { VaForm, VaInput, useForm, useModal } from 'vuestic-ui'
 
 const projectsStore = useProjectsStore()
 
@@ -32,7 +32,17 @@ async function submitRenameForm() {
   await projectsStore.update(projectToRename.value!)
 }
 
-function deleteProject(project: Project) {
+const modal = useModal()
+
+async function deleteProject(project: Project) {
+  const ok = await modal.confirm({
+    message: `really delete “${project.name}”?`,
+    size: 'small',
+    cancelText: 'cancel',
+    okText: 'delete'
+  })
+  if (!ok) return
+
   projectsStore.delete(project)
 }
 </script>
