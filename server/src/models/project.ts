@@ -1,34 +1,36 @@
-import { sequelize } from "../../datasource.ts"
-import { DataTypes, Model } from "sequelize";
-import { User, UserModel } from "./user.ts";
+import {
+  BelongsTo,
+  BelongsToMany,
+  Column,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from "sequelize-typescript";
+import { Binary } from "./binary.ts";
+import { Invite } from "./invite.ts";
+import { User } from "./user.ts";
 
-class ProjectModel extends Model 
-{
-  public id!: number;
-  public name!: string;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+@Table
+export class Project extends Model<Project> {
+  /** User-specified project name. */
+  @Column
+  declare name: string;
 
-  public addUser!: (user: UserModel) => Promise<void>;
-  public removeUser!: (user: UserModel) => Promise<void>;
-  public getUsers!: () => Promise<UserModel[]>;
+  /** Owning user. */
+  @BelongsTo(() => User, { onDelete: "cascade" })
+  owner!: User;
+
+  /** Owning user ID. */
+  @ForeignKey(() => User)
+  @Column
+  declare ownerId: number;
+
+  /** Invited users. */
+  @BelongsToMany(() => User, () => Invite)
+  invitees!: User;
+
+  /** Binaries in the project. */
+  @HasMany(() => Binary)
+  binaries!: Binary[];
 }
-
-export const Project = sequelize.define<ProjectModel>(
-  "Project",
-  {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    }
-  },
-  {
-    timestamps: true,
-  },
-);
-
-//UserId field available in Project for owner id
-Project.belongsTo(User);
-User.hasMany(Project);
-User.belongsToMany(Project, { through: 'Invites' });
-Project.belongsToMany(User, { through: 'Invites' });

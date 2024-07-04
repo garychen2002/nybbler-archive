@@ -25,6 +25,23 @@ import { shuffle } from 'lodash'
       <li><a class="va-link" href="https://expressjs.com/">Express</a></li>
       <li><a class="va-link" href="https://sequelize.org/">Sequelize</a></li>
       <li><a class="va-link" href="https://ghidra-sre.org/">Ghidra</a></li>
+      <li>Java Runtime and Development Kit 17 / OpenJDK 17</li>
+      <li>
+        <a class="va-link" href="https://github.com/decompiler-explorer/decompiler-explorer"
+          >Decompiler Explorer</a
+        >
+        (inspiration +
+        <a
+          class="va-link"
+          href="https://github.com/decompiler-explorer/decompiler-explorer/blob/master/runners/decompiler/tools/ghidra/DecompilerExplorer.java"
+          >reference for decompilation output script</a
+        >)
+      </li>
+      <li>
+        <a class="va-link" href="https://ben.page/node-spawn-callback"
+          >spawn function callback reference</a
+        >
+      </li>
     </ul>
   </div>
 </template>

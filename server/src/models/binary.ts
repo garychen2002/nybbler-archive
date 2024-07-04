@@ -1,0 +1,39 @@
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from "sequelize-typescript";
+import { Project } from "./project.ts";
+import { Symbol } from "./symbol.ts";
+
+@Table
+export class Binary extends Model<Binary> {
+  /** User-specified name. */
+  @Column
+  declare name: string;
+
+  /** Uploaded file information. */
+  @Column(DataType.JSON)
+  declare file: Express.Multer.File;
+
+  /** Owning project. */
+  @BelongsTo(() => Project, { onDelete: "cascade" })
+  project!: Project;
+
+  /** Owning project ID. */
+  @ForeignKey(() => Project)
+  @Column
+  declare projectId: number;
+
+  /** Symbols found in this binary. */
+  @HasMany(() => Symbol)
+  symbols!: Symbol[];
+
+  /** Disassembled version of code in the binary. */
+  @Column
+  declare disassembly: string;
+}
