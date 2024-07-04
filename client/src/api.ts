@@ -6,6 +6,7 @@ import { defaults, mande } from 'mande'
 const { VITE_API_BASE_URL } = import.meta.env
 
 export const apiProjects = mande(VITE_API_BASE_URL + '/api/projects')
+export const apiUsers = mande(VITE_API_BASE_URL + '/api/users')
 
 export function setToken(token: string) {
   defaults.headers['Authorization'] = `Bearer ${token}`

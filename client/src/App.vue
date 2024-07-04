@@ -17,7 +17,9 @@ import NavItem from './components/NavItem.vue'
         <template #center>
           <NavItem label="projects" to="/projects" />
         </template>
-        <template #right> </template>
+        <template #right> 
+          <NavItem label="login" to="/login" />
+        </template>
       </VaNavbar>
     </footer>
   </div>
