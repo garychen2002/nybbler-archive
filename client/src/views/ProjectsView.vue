@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NewProject from '@/components/NewProject.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import type { Project } from '@/models/project'
 import { signIn } from '@/services/auth'
@@ -48,25 +49,37 @@ async function deleteProject(project: Project) {
 </script>
 
 <template>
-  <div class="flex w-full items-start">
-    <ProjectCard
-      v-for="project in projectsStore.projects"
-      :key="project.id"
-      :project="project"
-      @rename="showRenameForm"
-      @delete="deleteProject"
-    />
+  <div class="flex w-full flex-col">
+    <div class="mb-4 flex">
+      <h1 class="va-h6">projects</h1>
+      <NewProject />
+    </div>
+
+    <div class="flex flex-wrap items-start">
+      <ProjectCard
+        v-for="project in projectsStore.projects"
+        :key="project.id"
+        :project="project"
+        @rename="showRenameForm"
+        @delete="deleteProject"
+      />
+    </div>
   </div>
 
-  <VaModal v-model="showRenameModal" hide-default-actions>
+  <VaModal v-model="showRenameModal" hide-default-actions size="small">
     <h3 class="va-h6 mb-4">rename project</h3>
-    <VaForm ref="renameForm" class="flex flex-col items-baseline gap-6" @submit="submitRenameForm">
+    <VaForm
+      ref="renameForm"
+      class="mb-4 flex flex-col items-baseline gap-6"
+      @submit="submitRenameForm"
+    >
       <VaInput
         v-if="projectToRename"
         v-model="projectToRename.name"
         ref="renameFormNameField"
         class="w-full"
         autofocus
+        label="project name"
       />
     </VaForm>
 

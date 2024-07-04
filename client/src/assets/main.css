@@ -12,3 +12,11 @@
 * {
   scrollbar-color: auto !important;
 }
+
+.va-input-label {
+  text-transform: lowercase !important;
+  letter-spacing: normal !important;
+  font-weight: 500 !important;
+  font-size: 0.85em !important;
+  margin-bottom: 0.5em !important;
+}
