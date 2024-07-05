@@ -1,5 +1,5 @@
 import type { PaginatedResponse } from '@/models/paginated'
-import type { Project } from '@/models/project'
+import type { ProjectMetadata } from '@/models/project_metadata'
 import { signIn } from '@/services/auth'
 import { keyBy } from 'lodash'
 import { defineStore } from 'pinia'
@@ -9,8 +9,8 @@ import { apiProjects } from '../services/api'
 export const useProjectsStore = defineStore('projects', () => {
   const initialized = ref(false)
 
-  const projects = ref<Project[]>([])
-  const projectsByID = ref<Record<string, Project>>({})
+  const projects = ref<ProjectMetadata[]>([])
+  const projectsByID = ref<Record<string, ProjectMetadata>>({})
   const olderID = ref<number>()
 
   // https://pinia.vuejs.org/core-concepts/actions.html
@@ -24,22 +24,22 @@ export const useProjectsStore = defineStore('projects', () => {
     }
   }
   async function create(name: string) {
-    await apiProjects.post<Project>({ name })
+    await apiProjects.post<ProjectMetadata>({ name })
     await fetchList()
   }
-  async function update(project: Project) {
+  async function update(project: ProjectMetadata) {
     await apiProjects.patch(project.id, project)
     await fetchList()
   }
-  async function delete_({ id }: Project) {
+  async function delete_({ id }: ProjectMetadata) {
     await apiProjects.delete(id)
     await fetchList()
   }
 
-  const exports = { initialized, projects, projectsByID, init, create, update, delete: delete_ }
+  const exports = { initialized, projects, projectsByID, init, create, update, leave: delete_ }
 
   async function fetchList() {
-    const page = await apiProjects.get<PaginatedResponse<Project>>({
+    const page = await apiProjects.get<PaginatedResponse<ProjectMetadata>>({
       query: {
         before: olderID,
         limit: 10

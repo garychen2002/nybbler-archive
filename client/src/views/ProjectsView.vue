@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import NewProject from '@/components/NewProject.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
-import type { Project } from '@/models/project'
+import type { ProjectMetadata } from '@/models/project_metadata'
 import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
@@ -13,10 +13,10 @@ watchEffect(async () => {
   await projectsStore.init()
 })
 
-const projectToRename = ref<Project>()
+const projectToRename = ref<ProjectMetadata>()
 const showRenameModal = ref(false)
 
-function showRenameForm(project: Project) {
+function showRenameForm(project: ProjectMetadata) {
   projectToRename.value = { ...project }
   showRenameModal.value = true
 }
@@ -35,16 +35,16 @@ async function submitRenameForm() {
 
 const modal = useModal()
 
-async function deleteProject(project: Project) {
+async function leaveProject(project: ProjectMetadata) {
   const ok = await modal.confirm({
-    message: `really delete “${project.name}”?`,
+    message: `really leave “${project.name}”?`,
     size: 'small',
     cancelText: 'cancel',
-    okText: 'delete'
+    okText: 'leave'
   })
   if (!ok) return
 
-  projectsStore.delete(project)
+  projectsStore.leave(project)
 }
 </script>
 
@@ -61,7 +61,7 @@ async function deleteProject(project: Project) {
         :key="project.id"
         :project="project"
         @rename="showRenameForm"
-        @delete="deleteProject"
+        @leave="leaveProject"
       />
     </div>
   </div>

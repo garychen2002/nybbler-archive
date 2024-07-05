@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { Project } from '@/models/project'
+import type { ProjectMetadata } from '@/models/project_metadata'
 
 defineProps<{
-  project: Project
+  project: ProjectMetadata
 }>()
 
 defineEmits<{
-  rename: [Project]
-  delete: [Project]
+  rename: [ProjectMetadata]
+  leave: [ProjectMetadata]
 }>()
 </script>
 
@@ -20,8 +20,8 @@ defineEmits<{
     </VaCardContent>
     <VaCardActions>
       <VaButton preset="secondary" @click.prevent="$emit('rename', project)"> rename </VaButton>
-      <VaButton preset="secondary" text-color="danger" @click.prevent="$emit('delete', project)">
-        delete
+      <VaButton preset="secondary" text-color="danger" @click.prevent="$emit('leave', project)">
+        leave
       </VaButton>
     </VaCardActions>
   </VaCard>

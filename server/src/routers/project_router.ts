@@ -1,14 +1,18 @@
 import { Router } from "express";
 import { keyBy } from "lodash-es";
 import multer from "multer";
+import { Op, Transaction } from "sequelize";
+import { sequelize } from "../../datasource.ts";
 import { analyze_ghidra } from "../../helpers/analyze.js";
 import { Binary } from "../models/binary.ts";
+import { Invite } from "../models/invite.ts";
 import { Project } from "../models/project.ts";
 import { Symbol } from "../models/symbol.ts";
 import { User } from "../models/user.ts";
 import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
+  STATUS_NO_CONTENT,
   STATUS_SERVER_ERROR,
   catchErrors,
   paginate,
@@ -22,29 +26,40 @@ export const projectRouter = Router();
 projectRouter.get(
   "/",
   catchErrors(async (req, res) => {
-    const ownerId = req.session.user!.id;
-    const beforeId = Number(req.query.before);
-    const afterId = Number(req.query.after);
-    const limit = Number(req.query.limit);
+    const userId = req.session.user!.id;
 
-    const page = await paginate(
-      {
-        model: Project,
-        primaryKey: "id",
-        where: { ownerId },
-        include: [
-          {
-            model: User,
-            as: "invitees",
-            through: { attributes: [] },
-          },
-        ],
+    const myProjects = await Project.findAll({
+      attributes: ["id"],
+      include: [
+        {
+          model: User,
+          as: "invitees",
+          where: { id: userId },
+          attributes: [],
+          through: { attributes: [] },
+        },
+      ],
+    });
+
+    const { count, rows } = await Project.findAndCountAll({
+      attributes: ["id", "name"],
+      where: {
+        id: {
+          [Op.in]: myProjects.map(({ id }) => id),
+        },
       },
-      beforeId,
-      afterId,
-      limit,
-    );
-    sendPaginatePage(res, page);
+      include: [
+        {
+          model: User,
+          as: "invitees",
+          attributes: ["id", "name", "email"],
+          through: { attributes: [] },
+        },
+      ],
+      order: [["id", "DESC"]],
+    });
+
+    res.json({ count, items: rows });
   }),
 );
 
@@ -68,8 +83,6 @@ projectRouter.get(
       rejectOnEmpty: true,
     });
 
-    console.log("   \n\n\n!!!!!!!1    done  !!!!!!!!!!!!!\n\n       ");
-
     res.json(project);
   }),
 );
@@ -86,7 +99,6 @@ projectRouter.patch(
   }),
 );
 
-// Create project with userId as owner
 projectRouter.post(
   "/",
   catchErrors(async (req, res) => {
@@ -94,7 +106,10 @@ projectRouter.post(
 
     const proj = await Project.create({
       name: name,
-      ownerId: req.session.user!.id,
+    });
+    await Invite.create({
+      userId: req.session.user!.id,
+      projectId: proj.id!,
     });
 
     res.status(STATUS_CREATED).json({ proj });
@@ -106,10 +121,20 @@ projectRouter.delete(
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
 
-    const proj = await Project.findByPk(projectId, { rejectOnEmpty: true });
+    await sequelize.transaction(
+      { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+      async (transaction) => {
+        await Invite.destroy({ transaction, where: { projectId, userId: req.session.user!.id } });
 
-    await proj.destroy();
-    return res.json(proj);
+        const invitesLeft = await Invite.count({ transaction, where: { projectId } });
+        if (!invitesLeft) {
+          const proj = await Project.findByPk(projectId, { transaction, rejectOnEmpty: true });
+          proj.destroy({ transaction });
+        }
+      },
+    );
+
+    return res.status(STATUS_NO_CONTENT).send();
   }),
 );
 
