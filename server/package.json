@@ -7,7 +7,8 @@
     "start": "node --loader ts-node/esm src/app.ts",
     "dev": "nodemon --watch src src/app.ts",
     "format": "npx prettier --write .",
-    "populate": "node --loader ts-node/esm scripts/populate.ts"
+    "populate": "node --loader ts-node/esm scripts/populate.ts",
+    "build": "npx tsc; cp -r scripts dist"
   },
   "devDependencies": {
     "@swc/core": "^1.6.3",
