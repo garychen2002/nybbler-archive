@@ -1,12 +1,4 @@
-import {
-  BelongsToMany,
-  Column,
-  HasMany,
-  IsEmail,
-  Model,
-  Table,
-  Unique,
-} from "sequelize-typescript";
+import { BelongsToMany, Column, IsEmail, Model, Table, Unique } from "sequelize-typescript";
 import { Invite } from "./invite.js";
 import { Project } from "./project.js";
 
@@ -21,10 +13,6 @@ export class User extends Model<User> {
   @IsEmail
   @Column
   declare email: string;
-
-  /** Owned projects. */
-  @HasMany(() => Project)
-  projects!: Project[];
 
   /** Projects user was invited to. */
   @BelongsToMany(() => Project, () => Invite)

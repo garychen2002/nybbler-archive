@@ -1,6 +1,5 @@
 import type { PaginatedResponse } from '@/models/paginated'
-import type { Project } from '@/models/project'
-import { signIn } from '@/services/auth'
+import type { ProjectMetadata } from '@/models/project_metadata'
 import { keyBy } from 'lodash'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -9,37 +8,54 @@ import { apiProjects } from '../services/api'
 export const useProjectsStore = defineStore('projects', () => {
   const initialized = ref(false)
 
-  const projects = ref<Project[]>([])
-  const projectsByID = ref<Record<string, Project>>({})
+  const projects = ref<ProjectMetadata[]>([])
+  const projectsByID = ref<Record<string, ProjectMetadata>>({})
   const olderID = ref<number>()
 
   // https://pinia.vuejs.org/core-concepts/actions.html
   async function init() {
-    // TODO: move this
-    await signIn('alice@example.com')
-
     if (!initialized.value) {
       fetchList()
       initialized.value = true
     }
   }
+  async function reinit() {
+    initialized.value = false
+    init()
+  }
   async function create(name: string) {
-    await apiProjects.post<Project>({ name })
+    await apiProjects.post<ProjectMetadata>({ name })
     await fetchList()
   }
-  async function update(project: Project) {
+  async function update(project: ProjectMetadata) {
     await apiProjects.patch(project.id, project)
     await fetchList()
   }
-  async function delete_({ id }: Project) {
+  async function invite({ id }: ProjectMetadata, userIds: number[]) {
+    await apiProjects.post(`${id}/invitees`, {
+      userIds
+    })
+    await fetchList()
+  }
+  async function leave({ id }: ProjectMetadata) {
     await apiProjects.delete(id)
     await fetchList()
   }
 
-  const exports = { initialized, projects, projectsByID, init, create, update, delete: delete_ }
+  const exports = {
+    initialized,
+    projects,
+    projectsByID,
+    init,
+    reinit,
+    create,
+    update,
+    invite,
+    leave
+  }
 
   async function fetchList() {
-    const page = await apiProjects.get<PaginatedResponse<Project>>({
+    const page = await apiProjects.get<PaginatedResponse<ProjectMetadata>>({
       query: {
         before: olderID,
         limit: 10
