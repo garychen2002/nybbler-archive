@@ -7,9 +7,9 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { Binary } from "./binary.ts";
-import { Invite } from "./invite.ts";
-import { User } from "./user.ts";
+import { Binary } from "./binary.js";
+import { Invite } from "./invite.js";
+import { User } from "./user.js";
 
 @Table
 export class Project extends Model<Project> {
