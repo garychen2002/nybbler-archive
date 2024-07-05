@@ -129,7 +129,7 @@ projectRouter.delete(
         const invitesLeft = await Invite.count({ transaction, where: { projectId } });
         if (!invitesLeft) {
           const proj = await Project.findByPk(projectId, { transaction, rejectOnEmpty: true });
-          proj.destroy({ transaction });
+          await proj.destroy({ transaction });
         }
       },
     );
