@@ -39,25 +39,27 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-try {
-  await sequelize.authenticate();
-  initModels();
-  await sequelize.sync({ alter: { drop: false } });
-  console.log("Connection has been established successfully.");
-} catch (error) {
-  console.error("Unable to connect to the database:", error);
-}
+(async () => {
+  try {
+    await sequelize.authenticate();
+    initModels();
+    await sequelize.sync({ alter: { drop: false } });
+    console.log("Connection has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
 
-app.use((req, res, next) => {
-  console.log("HTTP request", req.method, req.url, req.body);
-  next();
-});
+  app.use((req, res, next) => {
+    console.log("HTTP request", req.method, req.url, req.body);
+    next();
+  });
 
-app.use("/auth", authRouter);
-app.use("/api/projects", requireAuthentication, projectRouter);
-app.use("/api/users", requireAuthentication, userRouter);
-app.use("/api/binaries", requireAuthentication, binaryRouter);
+  app.use("/auth", authRouter);
+  app.use("/api/projects", requireAuthentication, projectRouter);
+  app.use("/api/users", requireAuthentication, userRouter);
+  app.use("/api/binaries", requireAuthentication, binaryRouter);
 
-app.listen(PORT, () => {
-  console.log(`HTTP server on port ${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`HTTP server on port ${PORT}`);
+  });
+})();
