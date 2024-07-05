@@ -3,7 +3,6 @@ import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import FileUpload from '@/components/FileUpload.vue'
 import type { Project } from '@/models/project'
 import { apiProjects } from '@/services/api'
-import { signIn } from '@/services/auth'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { VaInnerLoading, VaListItem } from 'vuestic-ui'
@@ -16,9 +15,6 @@ const props = defineProps<{
 
 const project = ref<Project>()
 async function fetchProject() {
-  // TODO: remove this
-  await signIn('alice@example.com')
-
   project.value = await apiProjects.get<Project>(props.projectId)
 }
 

@@ -4,7 +4,6 @@ import NewProject from '@/components/NewProject.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import type { ProjectMetadata } from '@/models/project_metadata'
 import type { User } from '@/models/user'
-import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
 import { useModal } from 'vuestic-ui'
@@ -28,9 +27,6 @@ async function submitInvite(newInvitees: User[]) {
   showInviteModal.value = false
   if (!projectForInvite.value) return
 
-  // TODO: remove this
-  await signIn('alice@example.com')
-
   await projectsStore.invite(
     projectForInvite.value,
     newInvitees.map((user) => user.id)
@@ -48,9 +44,6 @@ function showRename(project: ProjectMetadata) {
 async function submitRename(renamedProject: ProjectMetadata | undefined) {
   showRenameModal.value = false
   if (!renamedProject) return
-
-  // TODO: remove this
-  await signIn('alice@example.com')
 
   await projectsStore.update(renamedProject)
 }

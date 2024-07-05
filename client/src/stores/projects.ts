@@ -1,6 +1,5 @@
 import type { PaginatedResponse } from '@/models/paginated'
 import type { ProjectMetadata } from '@/models/project_metadata'
-import { signIn } from '@/services/auth'
 import { keyBy } from 'lodash'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -15,9 +14,6 @@ export const useProjectsStore = defineStore('projects', () => {
 
   // https://pinia.vuejs.org/core-concepts/actions.html
   async function init() {
-    // TODO: move this
-    await signIn('alice@example.com')
-
     if (!initialized.value) {
       fetchList()
       initialized.value = true

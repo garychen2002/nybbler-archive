@@ -1,6 +1,5 @@
 import type { PaginatedResponse } from '@/models/paginated'
 import type { User } from '@/models/user'
-import { signIn } from '@/services/auth'
 import { keyBy } from 'lodash'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
@@ -14,9 +13,6 @@ export const useUsersStore = defineStore('users', () => {
 
   // https://pinia.vuejs.org/core-concepts/actions.html
   async function init() {
-    // TODO: move this
-    await signIn('alice@example.com')
-
     if (!initialized.value) {
       fetchList()
       initialized.value = true
