@@ -35,6 +35,7 @@ export const useProjectsStore = defineStore('projects', () => {
     await apiProjects.post(`${id}/invitees`, {
       userIds
     })
+    await fetchList()
   }
   async function leave({ id }: ProjectMetadata) {
     await apiProjects.delete(id)

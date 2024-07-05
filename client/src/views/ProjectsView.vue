@@ -6,7 +6,7 @@ import type { ProjectMetadata } from '@/models/project_metadata'
 import type { User } from '@/models/user'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
-import { useModal } from 'vuestic-ui'
+import { useModal, useToast } from 'vuestic-ui'
 import RenameProjectModal from '../components/RenameProjectModal.vue'
 
 const projectsStore = useProjectsStore()
@@ -23,14 +23,21 @@ function showInvite(project: ProjectMetadata) {
   projectForInvite.value = { ...project }
 }
 
+const toast = useToast()
+
 async function submitInvite(newInvitees: User[]) {
   showInviteModal.value = false
-  if (!projectForInvite.value) return
+  if (!projectForInvite.value || !newInvitees.length) return
 
   await projectsStore.invite(
     projectForInvite.value,
     newInvitees.map((user) => user.id)
   )
+
+  toast.notify({
+    message: `${newInvitees.length} user${newInvitees.length === 1 ? '' : 's'} invited`,
+    color: 'success'
+  })
 }
 
 const showRenameModal = ref(false)
