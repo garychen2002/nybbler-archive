@@ -11,7 +11,9 @@ function getGhidraScriptPath(scriptName: string) {
 
 const __dirname = import.meta.dirname;
 const output_dir = path.join(__dirname, "..", "projects");
-mkdirSync(output_dir);
+try {
+  mkdirSync(output_dir);
+} catch {}
 const output_projectname = "testproject"; // use the random id of the uploaded file?
 // watch out for user defined names passing into arguments
 const input_filename = path.join("c:\\", "temp", "ascii.txt"); // pass in from uploads
