@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import InviteToProjectModal from '@/components/InviteToProjectModal.vue'
 import NewProject from '@/components/NewProject.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
-import type { Project } from '@/models/project'
-import { signIn } from '@/services/auth'
+import type { ProjectMetadata } from '@/models/project_metadata'
+import type { User } from '@/models/user'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
-import { VaForm, VaInput, useForm, useModal } from 'vuestic-ui'
+import { useModal, useToast } from 'vuestic-ui'
+import RenameProjectModal from '../components/RenameProjectModal.vue'
 
 const projectsStore = useProjectsStore()
 
@@ -13,38 +15,58 @@ watchEffect(async () => {
   await projectsStore.init()
 })
 
-const projectToRename = ref<Project>()
-const showRenameModal = ref(false)
+const showInviteModal = ref(false)
+const projectForInvite = ref<ProjectMetadata>()
 
-function showRenameForm(project: Project) {
-  projectToRename.value = { ...project }
-  showRenameModal.value = true
+function showInvite(project: ProjectMetadata) {
+  showInviteModal.value = true
+  projectForInvite.value = { ...project }
 }
 
-const renameForm = useForm('renameForm')
-const renameFormNameField = ref<HTMLInputElement>()
+const toast = useToast()
 
-async function submitRenameForm() {
+async function submitInvite(newInvitees: User[]) {
+  showInviteModal.value = false
+  if (!projectForInvite.value || !newInvitees.length) return
+
+  await projectsStore.invite(
+    projectForInvite.value,
+    newInvitees.map((user) => user.id)
+  )
+
+  toast.notify({
+    message: `${newInvitees.length} user${newInvitees.length === 1 ? '' : 's'} invited`,
+    color: 'success'
+  })
+}
+
+const showRenameModal = ref(false)
+const projectToRename = ref<ProjectMetadata>()
+
+function showRename(project: ProjectMetadata) {
+  showRenameModal.value = true
+  projectToRename.value = { ...project }
+}
+
+async function submitRename(renamedProject: ProjectMetadata | undefined) {
   showRenameModal.value = false
+  if (!renamedProject) return
 
-  // TODO: remove this
-  await signIn('alice@example.com')
-
-  await projectsStore.update(projectToRename.value!)
+  await projectsStore.update(renamedProject)
 }
 
 const modal = useModal()
 
-async function deleteProject(project: Project) {
+async function leaveProject(project: ProjectMetadata) {
   const ok = await modal.confirm({
-    message: `really delete “${project.name}”?`,
+    message: `really leave “${project.name}”?`,
     size: 'small',
     cancelText: 'cancel',
-    okText: 'delete'
+    okText: 'leave'
   })
   if (!ok) return
 
-  projectsStore.delete(project)
+  projectsStore.leave(project)
 }
 </script>
 
@@ -60,34 +82,22 @@ async function deleteProject(project: Project) {
         v-for="project in projectsStore.projects"
         :key="project.id"
         :project="project"
-        @rename="showRenameForm"
-        @delete="deleteProject"
+        @invite="showInvite"
+        @rename="showRename"
+        @leave="leaveProject"
       />
     </div>
   </div>
 
-  <VaModal v-model="showRenameModal" hide-default-actions size="small">
-    <h3 class="va-h6 mb-4">rename project</h3>
-    <VaForm
-      ref="renameForm"
-      class="mb-4 flex flex-col items-baseline gap-6"
-      @submit="submitRenameForm"
-    >
-      <VaInput
-        v-if="projectToRename"
-        v-model="projectToRename.name"
-        ref="renameFormNameField"
-        class="w-full"
-        autofocus
-        label="project name"
-      />
-    </VaForm>
+  <InviteToProjectModal
+    v-model:show="showInviteModal"
+    :project="projectForInvite"
+    @submit="submitInvite"
+  />
 
-    <template #footer>
-      <VaButton class="me-3" preset="secondary" @click="() => (showRenameModal = false)">
-        cancel
-      </VaButton>
-      <VaButton color="primary" @click="submitRenameForm"> rename </VaButton>
-    </template>
-  </VaModal>
+  <RenameProjectModal
+    v-model:show="showRenameModal"
+    :project="projectToRename"
+    @submit="submitRename"
+  />
 </template>

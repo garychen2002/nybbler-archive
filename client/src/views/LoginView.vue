@@ -1,42 +1,31 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { auth } from '@/services/api'
+import { signIn } from '@/services/auth'
+import { useProjectsStore } from '@/stores/projects'
+import { useUsersStore } from '@/stores/users'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const name = defineModel('name');
-const email = defineModel('email');
+const name = ref<string>('')
+const email = ref<string>('')
 
-const router = useRouter();
+const router = useRouter()
 
-const submit = (event: Event) => {
-  event.preventDefault();
+const stores = [useProjectsStore(), useUsersStore()]
 
-  try {
-    fetch('/api/users/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: name.value,
-        email: email.value,
-      }),
-    }).then((response) => {
-      if (!response.ok) {
-        throw new Error('Login request failed');
-      }
+const submit = async (event: Event) => {
+  event.preventDefault()
 
-      const data = response.json();
-    }).then((res) => {
-      router.push({
-        name: 'projects'
-      })
-    }
-    );
+  await auth.post('/signup', {
+    name: name.value,
+    email: email.value
+  })
+  await signIn(email.value)
 
+  stores.forEach((store) => store.reinit())
 
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
+  router.push({ name: 'projects' })
+}
 </script>
 
 <template>
@@ -45,12 +34,12 @@ const submit = (event: Event) => {
     <form>
       <div class="va-form-group mb-4">
         <label class="va-body-1 mb-2 mr-2" for="name">Name:</label>
-        <input class="va-input" v-model="name" placeholder="Name">
+        <input class="va-input" v-model="name" placeholder="Name" />
       </div>
 
       <div class="va-form-group mb-4">
         <label class="va-body-1 mb-2 mr-2" for="email">Email:</label>
-        <input class="va-input" v-model="email" placeholder="Email" equired>
+        <input class="va-input" v-model="email" placeholder="Email" equired />
       </div>
 
       <button @click="submit" class="va-button va-button--primary" type="submit">Submit</button>

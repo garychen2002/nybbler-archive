@@ -28,21 +28,30 @@ await Project.bulkCreate([
   {
     id: 1,
     name: "Project One",
-    ownerId: 1,
   },
   {
     id: 2,
     name: "Project Two",
-    ownerId: 1,
   },
   {
     id: 3,
     name: "Project Three",
-    ownerId: 1,
   },
 ] as any);
 
 await Invite.bulkCreate([
+  {
+    userId: 1,
+    projectId: 1,
+  },
+  {
+    userId: 1,
+    projectId: 2,
+  },
+  {
+    userId: 1,
+    projectId: 3,
+  },
   {
     userId: 2,
     projectId: 1,

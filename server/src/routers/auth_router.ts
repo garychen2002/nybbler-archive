@@ -3,27 +3,29 @@ import { User } from "../models/user.ts";
 import {
   STATUS_AUTHENTICATION_REQUIRED,
   STATUS_CREATED,
-  STATUS_FORBIDDEN,
   STATUS_NO_CONTENT,
   catchErrors,
 } from "../shared.js";
 
 export const authRouter = Router();
 
+// Temporary user creation
+// TODO: delete this
 authRouter.post(
   "/signup",
   catchErrors(async (req, res) => {
-    const { email } = req.body;
+    const { name, email } = req.body;
 
-    const [user, created] = await User.findOrCreate({
-      defaults: { email },
-      where: { email },
+    const [user] = await User.findOrCreate({
+      where: {
+        email,
+      },
+      defaults: {
+        name,
+        email,
+      },
     });
-    if (!created) {
-      return res.status(STATUS_FORBIDDEN).json({ error: "Username is taken." });
-    }
 
-    req.session.user = user;
     res.status(STATUS_CREATED).json(user);
   }),
 );

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
 import { VaButton } from 'vuestic-ui'
@@ -20,10 +19,6 @@ function showNewProjectForm() {
 
 async function submitNewProjectForm() {
   showNewProjectModal.value = false
-
-  // TODO: remove this
-  await signIn('alice@example.com')
-
   await projectsStore.create(name.value)
 }
 </script>
