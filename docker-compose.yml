@@ -42,6 +42,7 @@ services:
     environment:
       - VIRTUAL_HOST=api.nybbler.me
       - LETSENCRYPT_HOST=api.nybbler.me
+      - CORS_ORIGIN=https://nybbler.me
   redis:
     restart: always
     image: redis:7.2.5-alpine
