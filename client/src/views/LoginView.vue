@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { auth } from '@/services/api'
 import { signIn } from '@/services/auth'
+import { useProjectsStore } from '@/stores/projects'
+import { useUsersStore } from '@/stores/users'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -8,6 +10,8 @@ const name = ref<string>('')
 const email = ref<string>('')
 
 const router = useRouter()
+
+const stores = [useProjectsStore(), useUsersStore()]
 
 const submit = async (event: Event) => {
   event.preventDefault()
@@ -17,6 +21,8 @@ const submit = async (event: Event) => {
     email: email.value
   })
   await signIn(email.value)
+
+  stores.forEach((store) => store.reinit())
 
   router.push({ name: 'projects' })
 }

@@ -18,8 +18,12 @@ export const useUsersStore = defineStore('users', () => {
       initialized.value = true
     }
   }
+  async function reinit() {
+    initialized.value = false
+    init()
+  }
 
-  const exports = { initialized, users, usersByID, init }
+  const exports = { initialized, users, usersByID, init, reinit }
 
   async function fetchList() {
     const page = await apiUsers.get<PaginatedResponse<User>>()

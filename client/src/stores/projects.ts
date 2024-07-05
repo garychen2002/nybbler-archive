@@ -19,6 +19,10 @@ export const useProjectsStore = defineStore('projects', () => {
       initialized.value = true
     }
   }
+  async function reinit() {
+    initialized.value = false
+    init()
+  }
   async function create(name: string) {
     await apiProjects.post<ProjectMetadata>({ name })
     await fetchList()
@@ -37,7 +41,17 @@ export const useProjectsStore = defineStore('projects', () => {
     await fetchList()
   }
 
-  const exports = { initialized, projects, projectsByID, init, create, update, invite, leave }
+  const exports = {
+    initialized,
+    projects,
+    projectsByID,
+    init,
+    reinit,
+    create,
+    update,
+    invite,
+    leave
+  }
 
   async function fetchList() {
     const page = await apiProjects.get<PaginatedResponse<ProjectMetadata>>({
