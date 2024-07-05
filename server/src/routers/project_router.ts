@@ -173,7 +173,7 @@ projectRouter.post(
   "/:projectId/invitees",
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
-    const { userId } = req.body;
+    const { userIds } = req.body;
 
     const proj = await Project.findOne({
       where: {
@@ -182,15 +182,15 @@ projectRouter.post(
       rejectOnEmpty: true,
     });
 
-    const invitee = await User.findOne({
+    const invitees = await User.findAll({
       where: {
-        id: userId,
+        id: { [Op.in]: userIds },
       },
-      rejectOnEmpty: true,
     });
 
-    await proj.$add("invitees", invitee);
-    res.json(invitee);
+    await Promise.all(invitees.map((invitee) => proj.$add("invitees", invitee)));
+
+    res.status(STATUS_CREATED).send();
   }),
 );
 

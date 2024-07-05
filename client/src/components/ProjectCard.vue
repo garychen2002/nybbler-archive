@@ -6,6 +6,7 @@ defineProps<{
 }>()
 
 defineEmits<{
+  invite: [ProjectMetadata]
   rename: [ProjectMetadata]
   leave: [ProjectMetadata]
 }>()
@@ -19,7 +20,10 @@ defineEmits<{
       {{ project.invitees.map(({ name }) => name).join(', ') }}
     </VaCardContent>
     <VaCardActions>
-      <VaButton preset="secondary" @click.prevent="$emit('rename', project)"> rename </VaButton>
+      <VaButton preset="secondary" @click.prevent="$emit('invite', project)"> invite </VaButton>
+      <VaButton preset="secondary" color="secondary" @click.prevent="$emit('rename', project)">
+        rename
+      </VaButton>
       <VaButton preset="secondary" text-color="danger" @click.prevent="$emit('leave', project)">
         leave
       </VaButton>

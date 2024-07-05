@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import InviteToProjectModal from '@/components/InviteToProjectModal.vue'
 import NewProject from '@/components/NewProject.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import type { ProjectMetadata } from '@/models/project_metadata'
+import type { User } from '@/models/user'
 import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
 import { ref, watchEffect } from 'vue'
@@ -13,6 +15,27 @@ const projectsStore = useProjectsStore()
 watchEffect(async () => {
   await projectsStore.init()
 })
+
+const showInviteModal = ref(false)
+const projectForInvite = ref<ProjectMetadata>()
+
+function showInvite(project: ProjectMetadata) {
+  showInviteModal.value = true
+  projectForInvite.value = { ...project }
+}
+
+async function submitInvite(newInvitees: User[]) {
+  showInviteModal.value = false
+  if (!projectForInvite.value) return
+
+  // TODO: remove this
+  await signIn('alice@example.com')
+
+  await projectsStore.invite(
+    projectForInvite.value,
+    newInvitees.map((user) => user.id)
+  )
+}
 
 const showRenameModal = ref(false)
 const projectToRename = ref<ProjectMetadata>()
@@ -59,11 +82,18 @@ async function leaveProject(project: ProjectMetadata) {
         v-for="project in projectsStore.projects"
         :key="project.id"
         :project="project"
+        @invite="showInvite"
         @rename="showRename"
         @leave="leaveProject"
       />
     </div>
   </div>
+
+  <InviteToProjectModal
+    v-model:show="showInviteModal"
+    :project="projectForInvite"
+    @submit="submitInvite"
+  />
 
   <RenameProjectModal
     v-model:show="showRenameModal"

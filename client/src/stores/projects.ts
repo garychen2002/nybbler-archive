@@ -31,12 +31,17 @@ export const useProjectsStore = defineStore('projects', () => {
     await apiProjects.patch(project.id, project)
     await fetchList()
   }
-  async function delete_({ id }: ProjectMetadata) {
+  async function invite({ id }: ProjectMetadata, userIds: number[]) {
+    await apiProjects.post(`${id}/invitees`, {
+      userIds
+    })
+  }
+  async function leave({ id }: ProjectMetadata) {
     await apiProjects.delete(id)
     await fetchList()
   }
 
-  const exports = { initialized, projects, projectsByID, init, create, update, leave: delete_ }
+  const exports = { initialized, projects, projectsByID, init, create, update, invite, leave }
 
   async function fetchList() {
     const page = await apiProjects.get<PaginatedResponse<ProjectMetadata>>({
