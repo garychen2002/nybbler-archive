@@ -1,12 +1,17 @@
 import { spawn } from "child_process";
+import { mkdirSync } from "fs";
 import { readFile, unlink } from "fs/promises";
 import * as path from "path";
 
-// requires both a Ghidra install (env variable) and JDK 17 (openjdk-17-jdk) on the path
-const ghidra_install_path = process.env.GHIDRA_INSTALL_PATH;
-const analyzeHeadless = path.join(ghidra_install_path, "support", "analyzeHeadless");
+function getGhidraScriptPath(scriptName: string) {
+  // requires both a Ghidra install (env variable) and JDK 17 (openjdk-17-jdk) on the path
+  const ghidra_install_path = process.env.GHIDRA_INSTALL_PATH;
+  return path.join(ghidra_install_path!, "support", scriptName);
+}
+
 const __dirname = import.meta.dirname;
 const output_dir = path.join(__dirname, "..", "projects");
+mkdirSync(output_dir);
 const output_projectname = "testproject"; // use the random id of the uploaded file?
 // watch out for user defined names passing into arguments
 const input_filename = path.join("c:\\", "temp", "ascii.txt"); // pass in from uploads
@@ -37,7 +42,9 @@ export const analyze_ghidra = async (file_to_analyze: string): Promise<AnalysisR
       // add more postScripts for each script here
       "-deleteProject"
     ];
-    const command = spawn(analyzeHeadless, args, { shell: process.platform == "win32" });
+    const command = spawn(getGhidraScriptPath("analyzeHeadless"), args, {
+      shell: process.platform == "win32",
+    });
     command.stdout.on("data", (data) => {
       console.log(`stdout: ${data}`);
     });
