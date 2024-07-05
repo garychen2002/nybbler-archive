@@ -1,0 +1,64 @@
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - ./acme:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=ian.gregory@mail.utoronto.ca
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+  client:
+    image: ghcr.io/utsc-cscc09-programming-on-the-web/nybbler-client
+    container_name: client
+    restart: always
+    expose:
+      - 80
+    environment:
+      - VIRTUAL_HOST=nybbler.me
+      - LETSENCRYPT_HOST=nybbler.me
+  server:
+    image: ghcr.io/utsc-cscc09-programming-on-the-web/nybbler-server
+    container_name: server
+    restart: always
+    expose:
+      - 3000
+    environment:
+      - VIRTUAL_HOST=api.nybbler.me
+      - LETSENCRYPT_HOST=api.nybbler.me
+  redis:
+    restart: always
+    image: redis:7.2.5-alpine
+    ports:
+      - 6381:6379
+  postgres:
+    restart: always
+    image: postgres:16
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=cscc09
+      - POSTGRES_PASSWORD=cscc09
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+      - ./postgres12/:/docker-entrypoint-initdb.d/
+
+volumes:
+  postgres-volume:
+  mongo-volume:
