@@ -7,8 +7,8 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { Project } from "./project.ts";
-import { Symbol } from "./symbol.ts";
+import { Project } from "./project.js";
+import { Symbol } from "./symbol.js";
 
 @Table
 export class Binary extends Model<Binary> {

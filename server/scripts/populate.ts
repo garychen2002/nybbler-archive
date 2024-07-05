@@ -1,8 +1,8 @@
-import { sequelize } from "../datasource.ts";
-import { initModels } from "../src/models/_init.ts";
-import { Invite } from "../src/models/invite.ts";
-import { Project } from "../src/models/project.ts";
-import { User } from "../src/models/user.ts";
+import { sequelize } from "../datasource.js";
+import { initModels } from "../src/models/_init.js";
+import { Invite } from "../src/models/invite.js";
+import { Project } from "../src/models/project.js";
+import { User } from "../src/models/user.js";
 
 await sequelize.authenticate();
 console.log("Connection has been established successfully.");

@@ -2,13 +2,13 @@ import { Router } from "express";
 import { keyBy } from "lodash-es";
 import multer from "multer";
 import { Op, Transaction } from "sequelize";
-import { sequelize } from "../../datasource.ts";
+import { sequelize } from "../../datasource.js";
 import { analyze_ghidra } from "../../helpers/analyze.js";
-import { Binary } from "../models/binary.ts";
-import { Invite } from "../models/invite.ts";
-import { Project } from "../models/project.ts";
-import { Symbol } from "../models/symbol.ts";
-import { User } from "../models/user.ts";
+import { Binary } from "../models/binary.js";
+import { Invite } from "../models/invite.js";
+import { Project } from "../models/project.js";
+import { Symbol } from "../models/symbol.js";
+import { User } from "../models/user.js";
 import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
@@ -17,7 +17,7 @@ import {
   catchErrors,
   paginate,
   sendPaginatePage,
-} from "../shared.ts";
+} from "../shared.js";
 
 const upload = multer({ dest: "uploads/" });
 

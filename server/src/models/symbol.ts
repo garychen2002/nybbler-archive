@@ -1,5 +1,5 @@
 import { BelongsTo, Column, ForeignKey, Model, Table } from "sequelize-typescript";
-import { Binary } from "./binary.ts";
+import { Binary } from "./binary.js";
 
 @Table
 export class Symbol extends Model<Symbol> {

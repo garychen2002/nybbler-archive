@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { catchErrors } from "../shared.ts";
+import { catchErrors } from "../shared.js";
 
 export const binaryRouter = Router();
 

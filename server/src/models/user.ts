@@ -1,6 +1,6 @@
 import { BelongsToMany, Column, IsEmail, Model, Table, Unique } from "sequelize-typescript";
-import { Invite } from "./invite.ts";
-import { Project } from "./project.ts";
+import { Invite } from "./invite.js";
+import { Project } from "./project.js";
 
 @Table
 export class User extends Model<User> {

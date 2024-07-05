@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { User } from "../models/user.ts";
-import { catchErrors } from "../shared.ts";
+import { User } from "../models/user.js";
+import { catchErrors } from "../shared.js";
 
 export const userRouter = Router();
 

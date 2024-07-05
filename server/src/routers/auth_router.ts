@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { User } from "../models/user.ts";
+import { User } from "../models/user.js";
 import {
   STATUS_AUTHENTICATION_REQUIRED,
   STATUS_CREATED,
