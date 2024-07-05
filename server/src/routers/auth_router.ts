@@ -26,7 +26,6 @@ authRouter.post(
       },
     });
 
-    req.session.user = user;
     res.status(STATUS_CREATED).json(user);
   }),
 );
