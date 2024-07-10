@@ -4,6 +4,7 @@ import multer from "multer";
 import { Op, Transaction } from "sequelize";
 import { sequelize } from "../../datasource.js";
 import { analyze_ghidra } from "../../helpers/analyze.js";
+import { repo } from "../automerge.js";
 import { Binary } from "../models/binary.js";
 import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
@@ -42,7 +43,7 @@ projectRouter.get(
     });
 
     const { count, rows } = await Project.findAndCountAll({
-      attributes: ["id", "name"],
+      attributes: ["id", "name", "automergeDocumentId"],
       where: {
         id: {
           [Op.in]: myProjects.map(({ id }) => id),
@@ -104,8 +105,11 @@ projectRouter.post(
   catchErrors(async (req, res) => {
     const { name } = req.body;
 
+    const docHandle = repo.create({});
+
     const proj = await Project.create({
       name: name,
+      automergeDocumentId: docHandle.documentId,
     });
     await Invite.create({
       userId: req.session.user!.id,
