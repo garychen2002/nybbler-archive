@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import FileUpload from '@/components/FileUpload.vue'
+import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
+import type { BinarySymbol } from '@/models/binaries/binary'
+import type { CollabProject, CollabSymbolOverrides } from '@/models/collab'
 import type { Project } from '@/models/project'
 import { apiProjects } from '@/services/api'
+import { repo } from '@/services/automerge'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
-import { VaInnerLoading, VaListItem } from 'vuestic-ui'
+import { VaButton, VaInnerLoading, VaListItem } from 'vuestic-ui'
 
 const props = defineProps<{
   projectId: string
@@ -64,6 +68,41 @@ watch(selectedBinaryID, (newValue) => {
     params: { projectId: project.value.id, binaryId: `${newValue}` }
   })
 })
+
+const symbolOverrides = ref<CollabSymbolOverrides>()
+const automergeDocumentHandle = computed(() =>
+  project.value ? repo.find<CollabProject>(project.value.automergeDocumentId) : undefined
+)
+watch(automergeDocumentHandle, () => {
+  automergeDocumentHandle.value?.on('change', ({ doc }) => {
+    if (selectedBinaryID.value) {
+      symbolOverrides.value = doc.binaries?.[selectedBinaryID.value].symbolOverrides
+    }
+  })
+})
+
+const showRenameSymbolModal = ref(false)
+const symbolToRename = ref<BinarySymbol>()
+
+function showRenameSymbol(symbol: BinarySymbol) {
+  showRenameSymbolModal.value = true
+  symbolToRename.value = { ...symbol }
+}
+
+async function submitRenameSymbol(newName: string) {
+  showRenameSymbolModal.value = false
+  if (!automergeDocumentHandle.value) return
+
+  await automergeDocumentHandle.value.whenReady()
+  automergeDocumentHandle.value.change((doc) => {
+    if (selectedBinaryID.value && symbolToRename.value) {
+      doc.binaries ??= {}
+      doc.binaries[selectedBinaryID.value] ??= {}
+      doc.binaries[selectedBinaryID.value].symbolOverrides ??= {}
+      doc.binaries[selectedBinaryID.value].symbolOverrides![symbolToRename.value.address] = newName
+    }
+  })
+}
 </script>
 
 <template>
@@ -101,12 +140,24 @@ watch(selectedBinaryID, (newValue) => {
                         address: symbol.address
                       }
                     }"
-                    class="va-link m-1 rounded p-1"
-                    :class="{
-                      'selected-symbol': symbol.address === selectedSymbol?.address
-                    }"
+                    class="va-link group"
                   >
-                    <span class="font-mono">{{ symbol.name }}</span>
+                    <div
+                      class="m-1 flex w-full items-center justify-between rounded p-1 font-mono"
+                      :class="{
+                        'selected-symbol': symbol.address === selectedSymbol?.address
+                      }"
+                    >
+                      {{ symbolOverrides?.[symbol.address] ?? symbol.name }}
+                      <VaButton
+                        size="small"
+                        preset="secondary"
+                        class="invisible group-hover:visible"
+                        @click="showRenameSymbol(symbol)"
+                      >
+                        <VaIcon name="edit" />
+                      </VaButton>
+                    </div>
                   </VaListItem>
                 </VaList>
               </div>
@@ -123,6 +174,12 @@ watch(selectedBinaryID, (newValue) => {
         </VaLayout>
       </VaTabs>
     </div>
+
+    <RenameSymbolModal
+      :show="showRenameSymbolModal"
+      :currentName="symbolToRename?.name"
+      @submit="submitRenameSymbol"
+    />
   </VaInnerLoading>
 </template>
 
