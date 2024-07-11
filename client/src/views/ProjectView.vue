@@ -2,6 +2,7 @@
 import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import FileUpload from '@/components/FileUpload.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
+import SymbolList from '@/components/SymbolList.vue'
 import type { BinarySymbol } from '@/models/binaries/binary'
 import type { CollabProject, CollabSymbolOverrides } from '@/models/collab'
 import type { Project } from '@/models/project'
@@ -9,7 +10,7 @@ import { apiProjects } from '@/services/api'
 import { repo } from '@/services/automerge'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
-import { VaButton, VaInnerLoading, VaListItem } from 'vuestic-ui'
+import { VaInnerLoading } from 'vuestic-ui'
 
 const props = defineProps<{
   projectId: string
@@ -128,38 +129,14 @@ async function submitRenameSymbol(newName: string) {
               <h2 class="va-h6">symbols</h2>
 
               <div class="h-[55vh] rounded-sm border-2 border-solid border-primary p-2">
-                <VaList class="h-full overflow-auto text-xs">
-                  <VaListItem
-                    v-for="symbol in selectedBinary.symbols"
-                    :key="symbol.name"
-                    :to="{
-                      name: 'project-binary-address',
-                      params: {
-                        projectId: project.id,
-                        binaryId: selectedBinary.id,
-                        address: symbol.address
-                      }
-                    }"
-                    class="va-link group"
-                  >
-                    <div
-                      class="m-1 flex w-full items-center justify-between rounded p-1 font-mono"
-                      :class="{
-                        'selected-symbol': symbol.address === selectedSymbol?.address
-                      }"
-                    >
-                      {{ symbolOverrides?.[symbol.address] ?? symbol.name }}
-                      <VaButton
-                        size="small"
-                        preset="secondary"
-                        class="invisible group-hover:visible"
-                        @click="showRenameSymbol(symbol)"
-                      >
-                        <VaIcon name="edit" />
-                      </VaButton>
-                    </div>
-                  </VaListItem>
-                </VaList>
+                <SymbolList
+                  :projectId="project.id"
+                  :binaryId="selectedBinary.id"
+                  :symbols="selectedBinary.symbols"
+                  :selectedSymbol="selectedSymbol"
+                  :symbolOverrides="symbolOverrides ?? {}"
+                  @rename="showRenameSymbol"
+                />
               </div>
             </div>
           </template>
@@ -182,9 +159,3 @@ async function submitRenameSymbol(newName: string) {
     />
   </VaInnerLoading>
 </template>
-
-<style scoped>
-.selected-symbol {
-  background-color: #dee5f2 !important;
-}
-</style>
