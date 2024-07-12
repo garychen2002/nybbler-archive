@@ -34,7 +34,7 @@ export const analyze_ghidra = async (file_to_analyze: string): Promise<AnalysisR
   await new Promise<void>((resolve) => {
     // prettier-ignore
     const args = [
-      output_dir, output_projectname,
+      output_dir, path.basename(file_to_analyze),
       '-import', file_to_analyze,
       "-scriptPath", scripts_path,
       "-postScript", "ExportSymbolInfoScript.java", file_to_analyze + output_symbol_filename,
