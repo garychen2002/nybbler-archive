@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import NavItem from './components/NavItem.vue'
+import { restoreSession } from './services/auth'
 const { VITE_API_BASE_URL } = import.meta.env
 const loginTo = `${VITE_API_BASE_URL}/auth/signup/`
+
+restoreSession()
 </script>
 
 <template>
@@ -19,7 +22,7 @@ const loginTo = `${VITE_API_BASE_URL}/auth/signup/`
         <template #center>
           <NavItem label="projects" to="/projects" />
         </template>
-        <template #right> 
+        <template #right>
           <NavItem label="login" :to="loginTo" />
         </template>
       </VaNavbar>

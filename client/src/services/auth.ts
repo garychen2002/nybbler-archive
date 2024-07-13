@@ -1,6 +1,14 @@
 import { apiClearToken, apiSetToken, auth } from './api'
 
 /**
+ * Restores existing session from local storage, if one is present.
+ */
+export function restoreSession() {
+  const token = sessionStorage.getItem('session_token')
+  if (token) apiSetToken(token)
+}
+
+/**
  * Creates an application session to complete sign-in after receiving
  * an authorization code.
  *
@@ -9,12 +17,14 @@ import { apiClearToken, apiSetToken, auth } from './api'
 export async function signIn(code: string) {
   const { token } = await auth.get<{ token: string }>('/callback', { query: { code } })
   apiSetToken(token)
+  sessionStorage.setItem('session_token', token)
 }
 
 /**
  * Invalidates the application session and forgets the session token.
  */
 export async function signOut() {
-  await auth.post<void>('/signout')
+  sessionStorage.removeItem('session_token')
   apiClearToken()
+  await auth.post<void>('/signout')
 }
