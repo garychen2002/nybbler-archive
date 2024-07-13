@@ -17,6 +17,7 @@
     "@automerge/automerge-repo-network-websocket": "^1.2.0",
     "@automerge/automerge-repo-storage-indexeddb": "^1.2.0",
     "@vuestic/tailwind": "^0.1.5",
+    "color": "^4.2.3",
     "lodash": "^4.17.21",
     "mande": "^2.0.9",
     "pinia": "^2.1.7",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
+    "@types/color": "^3.0.6",
     "@types/node": "^20.14.7",
     "@types/splitpanes": "^2.2.6",
     "@vitejs/plugin-vue": "^5.0.5",

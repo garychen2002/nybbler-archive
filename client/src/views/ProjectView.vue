@@ -4,6 +4,7 @@ import FileUpload from '@/components/FileUpload.vue'
 import PageContent from '@/components/PageContent.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
 import SymbolList from '@/components/SymbolList.vue'
+import UserBubble from '@/components/UserBubble.vue'
 import type { BinarySymbol } from '@/models/binaries/binary'
 import type {
   CollabBookmarkedAddresses,
@@ -13,11 +14,13 @@ import type {
 import type { Project } from '@/models/project'
 import { apiProjects } from '@/services/api'
 import { repo } from '@/services/automerge'
+import { useCollabUserState } from '@/services/collab_user_state'
+import { useMeStore } from '@/stores/me'
 import type { Doc } from '@automerge/automerge-repo'
 import { indexOf } from 'lodash'
 import { Pane, Splitpanes } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
-import { computed, ref, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { VaIcon, VaInnerLoading } from 'vuestic-ui'
 
@@ -86,15 +89,34 @@ const automergeDocumentHandle = computed(() =>
   project.value ? repo.find<CollabProject>(project.value.automergeDocumentId) : undefined
 )
 
+const meStore = useMeStore()
+watchEffect(async () => {
+  await meStore.init()
+})
+
+const { userStates, broadcastUserState, stopBroadcastingUserState, listenForUserStates } =
+  useCollabUserState()
+
 function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
   if (selectedBinaryID.value) {
     symbolOverrides.value = doc.binaries?.[selectedBinaryID.value].symbolOverrides ?? {}
     bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value].bookmarkedAddresses ?? []
   }
+
+  broadcastUserState(automergeDocumentHandle.value, {
+    user: meStore.user,
+    binaryID: selectedBinaryID.value
+  })
 }
+
+onBeforeUnmount(() => {
+  stopBroadcastingUserState()
+})
 
 watch([automergeDocumentHandle, selectedBinaryID], async () => {
   if (!automergeDocumentHandle.value) return
+
+  listenForUserStates(automergeDocumentHandle.value)
 
   const doc = await automergeDocumentHandle.value.doc()
   if (doc) {
@@ -190,7 +212,13 @@ async function submitRenameSymbol(newName: string) {
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">
           <template #tabs>
             <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
-              {{ binary.name }}
+              <span class="me-1">{{ binary.name }}</span>
+              <UserBubble
+                v-for="userState in userStates.filter((state) => state.binaryID === binary.id)"
+                :key="userState.user!.id"
+                :user="userState.user!"
+                class="ms-1"
+              />
             </VaTab>
           </template>
 
