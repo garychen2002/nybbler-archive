@@ -12,10 +12,10 @@ export const apiUsers = mande(VITE_API_BASE_URL + '/api/users')
 
 defaults.credentials = 'include'
 
-export function setToken(token: string) {
+export function apiSetToken(token: string) {
   defaults.headers['Authorization'] = `Bearer ${token}`
 }
 
-export function clearToken() {
+export function apiClearToken() {
   delete defaults.headers['Authorization']
 }

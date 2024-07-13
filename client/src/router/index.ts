@@ -1,9 +1,9 @@
+import { signIn } from '@/services/auth'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import ProjectView from '@/views/ProjectView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import axios from 'axios'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,29 +49,20 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
-    { path: '/auth/callback',
+    {
+      path: '/auth/callback',
       name: 'callback',
-      component: { 
+      component: {
         template: '<div>Loading...</div>',
-        created() {
-          const code = new URLSearchParams(window.location.search).get('code');
+        async created() {
+          const code = new URLSearchParams(window.location.search).get('code')
           if (code) {
-            this.getToken(code);
+            await signIn(code)
+            this.$router.push({ name: 'projects' })
           }
-        },
-        methods: {
-          async getToken(code: string) {
-            try {
-              const { VITE_API_BASE_URL } = import.meta.env
-              await axios.get(`${VITE_API_BASE_URL}/auth/callback?code=${code}`);
-              this.$router.push({ name: 'projects' })
-            } catch (error) {
-              console.error('Failed to get access token', error);
-            }
-          },
-        },
+        }
       }
-    },
+    }
   ]
 })
 
