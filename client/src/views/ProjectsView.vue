@@ -73,23 +73,25 @@ async function leaveProject(project: ProjectMetadata) {
 
 <template>
   <PageContent>
-    <div class="flex w-full flex-col">
-      <div class="mb-4 flex">
-        <h1 class="va-h6">projects</h1>
-        <NewProject />
-      </div>
+    <VaInnerLoading :loading="!projectsStore.initialized">
+      <div class="flex w-full flex-col">
+        <div class="mb-4 flex">
+          <h1 class="va-h6">projects</h1>
+          <NewProject />
+        </div>
 
-      <div class="flex flex-wrap items-start">
-        <ProjectCard
-          v-for="project in projectsStore.projects"
-          :key="project.id"
-          :project="project"
-          @invite="showInvite"
-          @rename="showRename"
-          @leave="leaveProject"
-        />
+        <div class="flex flex-wrap items-start">
+          <ProjectCard
+            v-for="project in projectsStore.projects"
+            :key="project.id"
+            :project="project"
+            @invite="showInvite"
+            @rename="showRename"
+            @leave="leaveProject"
+          />
+        </div>
       </div>
-    </div>
+    </VaInnerLoading>
   </PageContent>
 
   <InviteToProjectModal

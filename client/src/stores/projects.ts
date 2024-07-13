@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import { apiProjects } from '../services/api'
 
 export const useProjectsStore = defineStore('projects', () => {
+  const currentlyInitializing = ref(false)
   const initialized = ref(false)
 
   const projects = ref<ProjectMetadata[]>([])
@@ -14,10 +15,13 @@ export const useProjectsStore = defineStore('projects', () => {
 
   // https://pinia.vuejs.org/core-concepts/actions.html
   async function init() {
-    if (!initialized.value) {
-      fetchList()
-      initialized.value = true
-    }
+    if (initialized.value || currentlyInitializing.value) return
+    currentlyInitializing.value = true
+
+    await fetchList()
+    initialized.value = true
+
+    currentlyInitializing.value = false
   }
   async function reinit() {
     initialized.value = false
