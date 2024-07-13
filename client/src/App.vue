@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import NavItem from './components/NavItem.vue'
+const { VITE_API_BASE_URL } = import.meta.env
+const loginTo = `${VITE_API_BASE_URL}/auth/signup/`
 </script>
 
 <template>
@@ -18,7 +20,7 @@ import NavItem from './components/NavItem.vue'
           <NavItem label="projects" to="/projects" />
         </template>
         <template #right> 
-          <NavItem label="login" to="/login" />
+          <NavItem label="login" :to="loginTo" />
         </template>
       </VaNavbar>
     </footer>

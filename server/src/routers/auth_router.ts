@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Router } from "express";
 import { User } from "../models/user.js";
 import {
@@ -9,6 +10,49 @@ import {
 
 export const authRouter = Router();
 
+authRouter.get("/signup", (req, res) => {
+  res.redirect(`https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}`);
+});
+
+authRouter.get("/callback", async (req, res) => {
+  const { code } = req.query;
+  try {
+    const response = await axios.post('https://github.com/login/oauth/access_token', null, {
+      params: {
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        code
+      },
+      headers: {
+        accept: 'application/json',
+      },
+    });
+
+    const accessToken = response.data.access_token;
+
+    const githubUser = await axios.get('https://api.github.com/user', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }).then((res) => res.data);
+
+    let user = await User.findOne({ where: { email: githubUser.email } });
+    if (!user) {
+      user = await User.create({
+        name: githubUser.login,
+        email: githubUser.email
+      });
+    }
+
+    req.session.user = user;
+    console.log(req.session);
+    res.status(STATUS_CREATED).json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get access token' });
+  }
+});
+
+/*
 // Temporary user creation
 // TODO: delete this
 authRouter.post(
@@ -46,6 +90,7 @@ authRouter.post(
     res.json(user);
   }),
 );
+*/
 
 authRouter.post(
   "/signout",

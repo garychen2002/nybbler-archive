@@ -3,6 +3,7 @@ import LoginView from '@/views/LoginView.vue'
 import ProjectView from '@/views/ProjectView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import axios from 'axios'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,7 +48,30 @@ const router = createRouter({
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
-    }
+    },
+    { path: '/auth/callback',
+      name: 'callback',
+      component: { 
+        template: '<div>Loading...</div>',
+        created() {
+          const code = new URLSearchParams(window.location.search).get('code');
+          if (code) {
+            this.getToken(code);
+          }
+        },
+        methods: {
+          async getToken(code: string) {
+            try {
+              const { VITE_API_BASE_URL } = import.meta.env
+              await axios.get(`${VITE_API_BASE_URL}/auth/callback?code=${code}`);
+              this.$router.push({ name: 'projects' })
+            } catch (error) {
+              console.error('Failed to get access token', error);
+            }
+          },
+        },
+      }
+    },
   ]
 })
 
