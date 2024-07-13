@@ -194,7 +194,9 @@ async function submitRenameSymbol(newName: string) {
 
                 <div class="flex flex-col">
                   <div class="pb-1">
-                    <div class="h-[28vh] rounded-sm border-2 border-solid border-primary p-2">
+                    <div
+                      class="h-[28vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                    >
                       <SymbolList
                         :projectId="project.id"
                         :binaryId="selectedBinary.id"
