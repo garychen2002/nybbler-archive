@@ -17,3 +17,10 @@ userRouter.get(
     res.json({ count, items: rows });
   }),
 );
+
+userRouter.get(
+  "/me",
+  catchErrors(async (req, res) => {
+    res.json(req.session.user);
+  }),
+);

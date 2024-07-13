@@ -4,7 +4,10 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 import session from "express-session";
+import http from "http";
+import { WebSocketServer } from "ws";
 import { sequelize } from "../datasource.js";
+import { runAutomergeService } from "./automerge.js";
 import { initModels } from "./models/_init.js";
 import { User } from "./models/user.js";
 import { authRouter } from "./routers/auth_router.js";
@@ -13,8 +16,10 @@ import { projectRouter } from "./routers/project_router.js";
 import { userRouter } from "./routers/user_router.js";
 import { requireAuthenticated as requireAuthentication } from "./shared.js";
 
-export const app = express();
 const PORT = process.env.PORT ?? 3000;
+
+export const app = express();
+const httpServer = http.createServer(app);
 
 app.use(
   session({
@@ -59,7 +64,22 @@ app.use(cors(corsOptions));
   app.use("/api/users", requireAuthentication, userRouter);
   app.use("/api/binaries", requireAuthentication, binaryRouter);
 
-  app.listen(PORT, () => {
+  // https://automerge.org/docs/repositories/networking/#usage-with-express
+  // https://stackoverflow.com/questions/28666527/how-to-handle-http-upgrade-in-expressjs
+  const wss = new WebSocketServer({ noServer: true });
+  httpServer.on(
+    "upgrade",
+    // @ts-ignore
+    (request, socket, head) => {
+      console.log("Upgrade to websocket");
+      wss.handleUpgrade(request, socket, head, (socket) => {
+        wss.emit("connection", socket, request);
+      });
+    },
+  );
+  runAutomergeService(wss);
+
+  httpServer.listen(PORT, () => {
     console.log(`HTTP server on port ${PORT}`);
   });
 })();

@@ -4,25 +4,16 @@ import { keyBy } from 'lodash'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { apiProjects } from '../services/api'
+import { useInitializeStore } from './_util'
 
 export const useProjectsStore = defineStore('projects', () => {
-  const initialized = ref(false)
+  const { initialized, init, reinit } = useInitializeStore(fetchList)
 
   const projects = ref<ProjectMetadata[]>([])
   const projectsByID = ref<Record<string, ProjectMetadata>>({})
   const olderID = ref<number>()
 
   // https://pinia.vuejs.org/core-concepts/actions.html
-  async function init() {
-    if (!initialized.value) {
-      fetchList()
-      initialized.value = true
-    }
-  }
-  async function reinit() {
-    initialized.value = false
-    init()
-  }
   async function create(name: string) {
     await apiProjects.post<ProjectMetadata>({ name })
     await fetchList()

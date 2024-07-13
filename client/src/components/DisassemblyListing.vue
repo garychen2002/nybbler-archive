@@ -36,7 +36,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div class="h-[55vh] rounded-sm border-2 border-solid border-primary p-2">
+  <div class="h-full rounded-sm border-2 border-solid border-primary p-2">
     <textarea
       ref="listingTextarea"
       class="h-full w-[50em] resize-none text-nowrap font-mono text-xs"
