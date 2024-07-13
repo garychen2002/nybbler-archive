@@ -4,7 +4,7 @@ import { apiClearToken, apiSetToken, auth } from './api'
  * Restores existing session from local storage, if one is present.
  */
 export function restoreSession() {
-  const token = sessionStorage.getItem('session_token')
+  const token = localStorage.getItem('session_token')
   if (token) apiSetToken(token)
 }
 
@@ -17,14 +17,14 @@ export function restoreSession() {
 export async function signIn(code: string) {
   const { token } = await auth.get<{ token: string }>('/callback', { query: { code } })
   apiSetToken(token)
-  sessionStorage.setItem('session_token', token)
+  localStorage.setItem('session_token', token)
 }
 
 /**
  * Invalidates the application session and forgets the session token.
  */
 export async function signOut() {
-  sessionStorage.removeItem('session_token')
+  localStorage.removeItem('session_token')
   apiClearToken()
   await auth.post<void>('/signout')
 }
