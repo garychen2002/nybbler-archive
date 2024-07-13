@@ -25,7 +25,7 @@ defineEmits<{
   <VaList class="text-xs">
     <VaListItem
       v-for="symbol in symbols"
-      :key="symbol.name"
+      :key="symbol.address"
       :to="{
         name: 'project-binary-address',
         params: {
