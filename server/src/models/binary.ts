@@ -34,6 +34,6 @@ export class Binary extends Model<Binary> {
   symbols!: Symbol[];
 
   /** Disassembled version of code in the binary. */
-  @Column
+  @Column(DataType.TEXT)
   declare disassembly: string;
 }

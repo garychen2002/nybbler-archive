@@ -49,7 +49,10 @@ const submitFile = async () => {
 </script>
 
 <template>
-  <VaButton class="ms-auto" @click="() => (showUploadModal = true)">upload binaries</VaButton>
+  <VaButton v-bind="$attrs" @click="() => (showUploadModal = true)">
+    upload binaries
+    <VaIcon name="upload" class="ms-2" />
+  </VaButton>
 
   <VaModal v-model="showUploadModal" hide-default-actions>
     <h3 class="va-h6 mb-4">upload binaries</h3>

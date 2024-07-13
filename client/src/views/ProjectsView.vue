@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import InviteToProjectModal from '@/components/InviteToProjectModal.vue'
 import NewProject from '@/components/NewProject.vue'
+import PageContent from '@/components/PageContent.vue'
 import ProjectCard from '@/components/ProjectCard.vue'
 import type { ProjectMetadata } from '@/models/project_metadata'
 import type { User } from '@/models/user'
@@ -71,23 +72,27 @@ async function leaveProject(project: ProjectMetadata) {
 </script>
 
 <template>
-  <div class="flex w-full flex-col">
-    <div class="mb-4 flex">
-      <h1 class="va-h6">projects</h1>
-      <NewProject />
-    </div>
+  <PageContent>
+    <VaInnerLoading :loading="!projectsStore.initialized">
+      <div class="flex w-full flex-col">
+        <div class="mb-4 flex">
+          <h1 class="va-h6">projects</h1>
+          <NewProject />
+        </div>
 
-    <div class="flex flex-wrap items-start">
-      <ProjectCard
-        v-for="project in projectsStore.projects"
-        :key="project.id"
-        :project="project"
-        @invite="showInvite"
-        @rename="showRename"
-        @leave="leaveProject"
-      />
-    </div>
-  </div>
+        <div class="flex flex-wrap items-start">
+          <ProjectCard
+            v-for="project in projectsStore.projects"
+            :key="project.id"
+            :project="project"
+            @invite="showInvite"
+            @rename="showRename"
+            @leave="leaveProject"
+          />
+        </div>
+      </div>
+    </VaInnerLoading>
+  </PageContent>
 
   <InviteToProjectModal
     v-model:show="showInviteModal"

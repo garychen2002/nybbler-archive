@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { User } from "../models/user.js";
-import { catchErrors } from "../shared.js";
+import { catchErrors, getAuthenticatedUser } from "../shared.js";
 
 export const userRouter = Router();
 
@@ -15,5 +15,12 @@ userRouter.get(
     });
 
     res.json({ count, items: rows });
+  }),
+);
+
+userRouter.get(
+  "/me",
+  catchErrors(async (req, res) => {
+    res.json((await getAuthenticatedUser(req))!);
   }),
 );
