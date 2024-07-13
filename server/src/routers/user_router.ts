@@ -10,7 +10,7 @@ userRouter.get(
     // TODO: paginate
 
     const { count, rows } = await User.findAndCountAll({
-      attributes: ["id", "name", "email"],
+      attributes: ["id", "username", "name"],
       order: [["id", "DESC"]],
     });
 

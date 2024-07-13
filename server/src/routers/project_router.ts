@@ -52,7 +52,7 @@ projectRouter.get(
         {
           model: User,
           as: "invitees",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "username", "name"],
           through: { attributes: [] },
         },
       ],
