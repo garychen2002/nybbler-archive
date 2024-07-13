@@ -15,6 +15,7 @@ import {
   STATUS_NO_CONTENT,
   STATUS_SERVER_ERROR,
   catchErrors,
+  getAuthenticatedUser,
   paginate,
   sendPaginatePage,
 } from "../shared.js";
@@ -26,7 +27,7 @@ export const projectRouter = Router();
 projectRouter.get(
   "/",
   catchErrors(async (req, res) => {
-    const userId = req.session.user!.id;
+    const user = await getAuthenticatedUser(req);
 
     const myProjects = await Project.findAll({
       attributes: ["id"],
@@ -34,7 +35,7 @@ projectRouter.get(
         {
           model: User,
           as: "invitees",
-          where: { id: userId },
+          where: { id: user!.id },
           attributes: [],
           through: { attributes: [] },
         },
@@ -103,12 +104,13 @@ projectRouter.post(
   "/",
   catchErrors(async (req, res) => {
     const { name } = req.body;
+    const user = await getAuthenticatedUser(req);
 
     const proj = await Project.create({
       name: name,
     });
     await Invite.create({
-      userId: req.session.user!.id,
+      userId: user!.id,
       projectId: proj.id!,
     });
 

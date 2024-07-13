@@ -1,7 +1,13 @@
 import axios from "axios";
 import { Router } from "express";
+import { Session } from "../models/session.js";
 import { User } from "../models/user.js";
-import { STATUS_AUTHENTICATION_REQUIRED, STATUS_NO_CONTENT, catchErrors } from "../shared.js";
+import {
+  STATUS_AUTHENTICATION_REQUIRED,
+  STATUS_NO_CONTENT,
+  catchErrors,
+  getAuthenticatedUser,
+} from "../shared.js";
 
 export const authRouter = Router();
 
@@ -50,15 +56,21 @@ authRouter.get(
       },
     });
 
-    req.session.user = user;
-    res.json(user);
+    const { token } = await Session.create({
+      userId: user.id!,
+    });
+    res.json({ token });
   }),
 );
 
 authRouter.post(
   "/signout",
   catchErrors(async (req, res) => {
-    delete req.session.user;
+    const user = await getAuthenticatedUser(req);
+    if (!user) return;
+
+    await Session.destroy({ where: { userId: user.id } });
+
     res.status(STATUS_NO_CONTENT).send();
   }),
 );

@@ -3,10 +3,8 @@ import "dotenv/config"; // env file in server directory
 import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
-import session from "express-session";
 import { sequelize } from "../datasource.js";
 import { initModels } from "./models/_init.js";
-import { User } from "./models/user.js";
 import { authRouter } from "./routers/auth_router.js";
 import { binaryRouter } from "./routers/binary_router.js";
 import { projectRouter } from "./routers/project_router.js";
@@ -15,19 +13,6 @@ import { requireAuthenticated as requireAuthentication } from "./shared.js";
 
 export const app = express();
 const PORT = process.env.PORT ?? 3000;
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET ?? "this is a bad secret, please set one in the environment",
-    resave: false,
-    saveUninitialized: true,
-  }),
-);
-declare module "express-session" {
-  interface SessionData {
-    user: User;
-  }
-}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
