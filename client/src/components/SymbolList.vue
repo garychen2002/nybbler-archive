@@ -22,7 +22,7 @@ defineEmits<{
 </script>
 
 <template>
-  <VaList class="h-full overflow-auto text-xs">
+  <VaList class="text-xs">
     <VaListItem
       v-for="symbol in symbols"
       :key="symbol.name"
