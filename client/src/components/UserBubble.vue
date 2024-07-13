@@ -16,7 +16,7 @@ function hashStringToColor(str: string) {
   return `hsl(${stringUniqueHash % 360}, 90%, 60%)`
 }
 
-const backgroundColor = computed(() => hashStringToColor(props.user.email))
+const backgroundColor = computed(() => hashStringToColor(props.user.username))
 const color = computed(() => (Color(backgroundColor.value).isLight() ? '#000' : '#fff'))
 </script>
 
@@ -27,7 +27,7 @@ const color = computed(() => (Color(backgroundColor.value).isLight() ? '#000' : 
       borderColor,
       backgroundColor
     }"
-    :title="`${user.name} (${user.email})`"
+    :title="`${user.name} (${user.username})`"
   >
     <span :style="{ color }">{{ user.name[0].toLocaleUpperCase() }}</span>
   </div>

@@ -1,3 +1,6 @@
+ARG CLIENT_ID
+ARG CLIENT_SECRET
+
 FROM node:20
 WORKDIR /usr/src/app
 COPY package*.json ./
@@ -14,4 +17,6 @@ RUN wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghid
     && rm ghidra.zip \
     && mv ghidra_* ghidra
 ENV GHIDRA_INSTALL_PATH=/usr/src/app/dist/ghidra
+ENV CLIENT_ID=$CLIENT_ID
+ENV CLIENT_SECRET=$CLIENT_SECRET
 CMD [ "node", "src/app.js" ]

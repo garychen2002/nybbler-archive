@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { User } from "../models/user.js";
-import { catchErrors } from "../shared.js";
+import { catchErrors, getAuthenticatedUser } from "../shared.js";
 
 export const userRouter = Router();
 
@@ -10,7 +10,7 @@ userRouter.get(
     // TODO: paginate
 
     const { count, rows } = await User.findAndCountAll({
-      attributes: ["id", "name", "email"],
+      attributes: ["id", "username", "name"],
       order: [["id", "DESC"]],
     });
 
@@ -21,6 +21,6 @@ userRouter.get(
 userRouter.get(
   "/me",
   catchErrors(async (req, res) => {
-    res.json(req.session.user);
+    res.json((await getAuthenticatedUser(req))!);
   }),
 );

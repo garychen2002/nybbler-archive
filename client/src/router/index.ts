@@ -1,5 +1,5 @@
+import { signIn } from '@/services/auth'
 import HomeView from '@/views/HomeView.vue'
-import LoginView from '@/views/LoginView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 // route level code-splitting
@@ -16,11 +16,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView
     },
     {
       path: '/projects',
@@ -49,6 +44,20 @@ const router = createRouter({
       path: '/about',
       name: 'about',
       component: AboutView
+    },
+    {
+      path: '/auth/callback',
+      name: 'callback',
+      component: {
+        template: '<div>Loading...</div>',
+        async created() {
+          const code = new URLSearchParams(window.location.search).get('code')
+          if (code) {
+            await signIn(code)
+            this.$router.push({ name: 'projects' })
+          }
+        }
+      }
     }
   ]
 })

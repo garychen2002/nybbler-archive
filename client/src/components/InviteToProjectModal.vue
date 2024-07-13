@@ -34,7 +34,7 @@ const notInvitedUsers = computed(() =>
 )
 
 function makeUserOption(user: User) {
-  return { id: user.id, label: `${user.name} (${user.email})` }
+  return { id: user.id, label: `${user.name} (${user.username})` }
 }
 
 const usersOptions = computed(() =>

@@ -11,6 +11,8 @@ import {
   UniqueConstraintError,
   ValidationError,
 } from "sequelize";
+import { Session } from "./models/session.js";
+import { User } from "./models/user.js";
 
 export const STATUS_CREATED = 201;
 export const STATUS_NO_CONTENT = 204;
@@ -20,9 +22,23 @@ export const STATUS_NOT_FOUND = 404;
 export const STATUS_INVALID_REQUEST = 422;
 export const STATUS_SERVER_ERROR = 500;
 
+export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
+  const authorization = req.headers["authorization"];
+  if (!authorization) return;
+
+  const token = authorization.match(/Bearer\s*(.+)/i)?.[1];
+  if (!token) return;
+
+  const session = await Session.findOne({ where: { token } });
+  if (!session) return;
+
+  // For some reason, the `user` association wasn't working. But this will.
+  return (await User.findByPk(session.userId)) ?? undefined;
+}
+
 /** Middleware that ensures the request is authenticated. */
 export async function requireAuthenticated(req: Request, res: Response, next: NextFunction) {
-  const { user } = req.session;
+  const user = await getAuthenticatedUser(req);
   if (!user) {
     return res
       .status(STATUS_AUTHENTICATION_REQUIRED)
