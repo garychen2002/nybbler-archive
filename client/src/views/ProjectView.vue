@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import FileUpload from '@/components/FileUpload.vue'
+import PageContent from '@/components/PageContent.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
 import SymbolList from '@/components/SymbolList.vue'
 import type { BinarySymbol } from '@/models/binaries/binary'
@@ -162,64 +163,70 @@ async function submitRenameSymbol(newName: string) {
 </script>
 
 <template>
-  <VaInnerLoading :loading="!project">
-    <div class="w-full" v-if="project">
-      <div class="mb-4 flex">
-        <h1 class="va-h6">
-          {{ project.name }}
-        </h1>
-        <FileUpload :projectId="props.projectId" />
+  <PageContent>
+    <VaInnerLoading :loading="!project">
+      <div class="w-full" v-if="project">
+        <div class="mb-4 flex">
+          <h1 class="va-h6">
+            {{ project.name }}
+          </h1>
+          <FileUpload :projectId="props.projectId" />
+        </div>
+
+        <VaTabs v-model="selectedBinaryID" class="items-start">
+          <template #tabs>
+            <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
+              {{ binary.name }}
+            </VaTab>
+          </template>
+
+          <VaLayout v-if="selectedBinary" class="mt-4">
+            <template #left>
+              <div class="flex flex-col gap-2 p-4">
+                <h2 class="va-h6">symbols</h2>
+
+                <div class="h-[20vh] rounded-sm border-2 border-solid border-primary p-2">
+                  <SymbolList
+                    :projectId="project.id"
+                    :binaryId="selectedBinary.id"
+                    :symbols="bookmarkedSymbols"
+                    :selectedSymbol="selectedSymbol"
+                    :overrides="symbolOverrides ?? {}"
+                    isBookmarkList
+                    @bookmark="toggleSymbolBookmarked"
+                    @rename="showRenameSymbol"
+                  />
+                </div>
+
+                <div class="h-[35vh] rounded-sm border-2 border-solid border-primary p-2">
+                  <SymbolList
+                    :projectId="project.id"
+                    :binaryId="selectedBinary.id"
+                    :symbols="nonBookmarkedSymbols"
+                    :selectedSymbol="selectedSymbol"
+                    :overrides="symbolOverrides ?? {}"
+                    @bookmark="toggleSymbolBookmarked"
+                    @rename="showRenameSymbol"
+                  />
+                </div>
+              </div>
+            </template>
+
+            <template #content>
+              <div class="flex flex-col gap-2 p-4">
+                <h2 class="va-h6">disassembly</h2>
+
+                <DisassemblyListing
+                  :project="project"
+                  :binary="selectedBinary"
+                  :address="address"
+                />
+              </div>
+            </template>
+          </VaLayout>
+        </VaTabs>
       </div>
-
-      <VaTabs v-model="selectedBinaryID" class="items-start">
-        <template #tabs>
-          <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
-            {{ binary.name }}
-          </VaTab>
-        </template>
-
-        <VaLayout v-if="selectedBinary" class="mt-4">
-          <template #left>
-            <div class="flex flex-col gap-2 p-4">
-              <h2 class="va-h6">symbols</h2>
-
-              <div class="h-[20vh] rounded-sm border-2 border-solid border-primary p-2">
-                <SymbolList
-                  :projectId="project.id"
-                  :binaryId="selectedBinary.id"
-                  :symbols="bookmarkedSymbols"
-                  :selectedSymbol="selectedSymbol"
-                  :overrides="symbolOverrides ?? {}"
-                  isBookmarkList
-                  @bookmark="toggleSymbolBookmarked"
-                  @rename="showRenameSymbol"
-                />
-              </div>
-
-              <div class="h-[35vh] rounded-sm border-2 border-solid border-primary p-2">
-                <SymbolList
-                  :projectId="project.id"
-                  :binaryId="selectedBinary.id"
-                  :symbols="nonBookmarkedSymbols"
-                  :selectedSymbol="selectedSymbol"
-                  :overrides="symbolOverrides ?? {}"
-                  @bookmark="toggleSymbolBookmarked"
-                  @rename="showRenameSymbol"
-                />
-              </div>
-            </div>
-          </template>
-
-          <template #content>
-            <div class="flex flex-col gap-2 p-4">
-              <h2 class="va-h6">disassembly</h2>
-
-              <DisassemblyListing :project="project" :binary="selectedBinary" :address="address" />
-            </div>
-          </template>
-        </VaLayout>
-      </VaTabs>
-    </div>
+    </VaInnerLoading>
 
     <RenameSymbolModal
       v-model:show="showRenameSymbolModal"
@@ -230,5 +237,5 @@ async function submitRenameSymbol(newName: string) {
       "
       @submit="submitRenameSymbol"
     />
-  </VaInnerLoading>
+  </PageContent>
 </template>

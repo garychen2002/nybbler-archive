@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import HomepageFooter from '@/components/HomepageFooter.vue'
+import PageContent from '@/components/PageContent.vue'
 import { auth } from '@/services/api'
 import { signIn } from '@/services/auth'
 import { useProjectsStore } from '@/stores/projects'
@@ -29,20 +31,24 @@ const submit = async (event: Event) => {
 </script>
 
 <template>
-  <div class="w-4/12">
-    <h3 class="va-h3">Temporary User Login</h3>
-    <form>
-      <div class="va-form-group mb-4">
-        <label class="va-body-1 mb-2 mr-2" for="name">Name:</label>
-        <input class="va-input" v-model="name" placeholder="Name" />
-      </div>
+  <PageContent>
+    <div class="w-4/12">
+      <h3 class="va-h3">Temporary User Login</h3>
+      <form>
+        <div class="va-form-group mb-4">
+          <label class="va-body-1 mb-2 mr-2" for="name">Name:</label>
+          <input class="va-input" v-model="name" placeholder="Name" />
+        </div>
 
-      <div class="va-form-group mb-4">
-        <label class="va-body-1 mb-2 mr-2" for="email">Email:</label>
-        <input class="va-input" v-model="email" placeholder="Email" equired />
-      </div>
+        <div class="va-form-group mb-4">
+          <label class="va-body-1 mb-2 mr-2" for="email">Email:</label>
+          <input class="va-input" v-model="email" placeholder="Email" equired />
+        </div>
 
-      <button @click="submit" class="va-button va-button--primary" type="submit">Submit</button>
-    </form>
-  </div>
+        <button @click="submit" class="va-button va-button--primary" type="submit">Submit</button>
+      </form>
+    </div>
+  </PageContent>
+
+  <HomepageFooter />
 </template>
