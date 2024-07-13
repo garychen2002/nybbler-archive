@@ -10,11 +10,9 @@ import NavItem from '@/components/NavItem.vue'
         <NavItem label="about" to="/about" />
       </template>
       <template #center>
-        <NavItem label="projects" to="/projects" />
-      </template>
-      <template #right>
         <NavItem label="login" to="/login" />
       </template>
+      <template #right> </template>
     </VaNavbar>
   </footer>
 </template>

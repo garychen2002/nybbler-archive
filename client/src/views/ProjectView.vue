@@ -15,9 +15,11 @@ import { apiProjects } from '@/services/api'
 import { repo } from '@/services/automerge'
 import type { Doc } from '@automerge/automerge-repo'
 import { indexOf } from 'lodash'
+import { Pane, Splitpanes } from 'splitpanes'
+import 'splitpanes/dist/splitpanes.css'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
-import { VaInnerLoading } from 'vuestic-ui'
+import { VaIcon, VaInnerLoading } from 'vuestic-ui'
 
 const props = defineProps<{
   projectId: string
@@ -163,57 +165,70 @@ async function submitRenameSymbol(newName: string) {
 </script>
 
 <template>
-  <PageContent>
+  <PageContent class="pt-8">
     <VaInnerLoading :loading="!project">
-      <div class="w-full" v-if="project">
-        <div class="mb-4 flex">
+      <div v-if="project" class="h-full">
+        <div class="mb-2 flex">
+          <VaButton to="/projects" preset="primary" class="me-4" title="return to projects">
+            <VaIcon name="arrow_back" />
+          </VaButton>
+
           <h1 class="va-h6">
             {{ project.name }}
           </h1>
-          <FileUpload :projectId="props.projectId" />
+
+          <FileUpload :projectId="props.projectId" class="ms-auto" />
         </div>
 
-        <VaTabs v-model="selectedBinaryID" class="items-start">
+        <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">
           <template #tabs>
             <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
               {{ binary.name }}
             </VaTab>
           </template>
 
-          <VaLayout v-if="selectedBinary" class="mt-4">
-            <template #left>
-              <div class="flex flex-col gap-2 p-4">
+          <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
+            <pane min-size="20">
+              <div class="flex h-full flex-col gap-2 p-4">
                 <h2 class="va-h6">symbols</h2>
 
-                <div class="h-[20vh] rounded-sm border-2 border-solid border-primary p-2">
-                  <SymbolList
-                    :projectId="project.id"
-                    :binaryId="selectedBinary.id"
-                    :symbols="bookmarkedSymbols"
-                    :selectedSymbol="selectedSymbol"
-                    :overrides="symbolOverrides ?? {}"
-                    isBookmarkList
-                    @bookmark="toggleSymbolBookmarked"
-                    @rename="showRenameSymbol"
-                  />
-                </div>
+                <div class="flex flex-col">
+                  <div class="pb-1">
+                    <div class="h-[28vh] rounded-sm border-2 border-solid border-primary p-2">
+                      <SymbolList
+                        :projectId="project.id"
+                        :binaryId="selectedBinary.id"
+                        :symbols="bookmarkedSymbols"
+                        :selectedSymbol="selectedSymbol"
+                        :overrides="symbolOverrides ?? {}"
+                        isBookmarkList
+                        @bookmark="toggleSymbolBookmarked"
+                        @rename="showRenameSymbol"
+                      />
+                    </div>
+                  </div>
 
-                <div class="h-[35vh] rounded-sm border-2 border-solid border-primary p-2">
-                  <SymbolList
-                    :projectId="project.id"
-                    :binaryId="selectedBinary.id"
-                    :symbols="nonBookmarkedSymbols"
-                    :selectedSymbol="selectedSymbol"
-                    :overrides="symbolOverrides ?? {}"
-                    @bookmark="toggleSymbolBookmarked"
-                    @rename="showRenameSymbol"
-                  />
+                  <div class="pt-1">
+                    <div
+                      class="h-[40.49vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                    >
+                      <SymbolList
+                        :projectId="project.id"
+                        :binaryId="selectedBinary.id"
+                        :symbols="nonBookmarkedSymbols"
+                        :selectedSymbol="selectedSymbol"
+                        :overrides="symbolOverrides ?? {}"
+                        @bookmark="toggleSymbolBookmarked"
+                        @rename="showRenameSymbol"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </template>
+            </pane>
 
-            <template #content>
-              <div class="flex flex-col gap-2 p-4">
+            <pane min-size="40">
+              <div class="flex h-full flex-col gap-2 p-4">
                 <h2 class="va-h6">disassembly</h2>
 
                 <DisassemblyListing
@@ -222,8 +237,8 @@ async function submitRenameSymbol(newName: string) {
                   :address="address"
                 />
               </div>
-            </template>
-          </VaLayout>
+            </pane>
+          </splitpanes>
         </VaTabs>
       </div>
     </VaInnerLoading>
@@ -239,3 +254,23 @@ async function submitRenameSymbol(newName: string) {
     />
   </PageContent>
 </template>
+
+<style scoped>
+.project-view-main-tabs :deep(.va-tabs__content) {
+  width: 100%;
+}
+
+:deep(.splitpanes--vertical > .splitpanes__splitter) {
+  min-width: 12px !important;
+  background: var(--va-background-element) !important;
+}
+
+:deep(.splitpanes--horizontal > .splitpanes__splitter) {
+  min-height: 12px !important;
+  background: var(--va-background-element) !important;
+}
+
+.outer-splitpanes {
+  height: calc(100vh - 130px);
+}
+</style>

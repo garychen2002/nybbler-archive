@@ -20,6 +20,7 @@
     "lodash": "^4.17.21",
     "mande": "^2.0.9",
     "pinia": "^2.1.7",
+    "splitpanes": "^3.1.5",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "vuestic-ui": "^1.9.11"
@@ -28,6 +29,7 @@
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.7",
+    "@types/splitpanes": "^2.2.6",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",
