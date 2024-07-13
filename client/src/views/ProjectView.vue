@@ -93,7 +93,7 @@ function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
   }
 }
 
-watch(automergeDocumentHandle, async () => {
+watch([automergeDocumentHandle, selectedBinaryID], async () => {
   if (!automergeDocumentHandle.value) return
 
   const doc = await automergeDocumentHandle.value.doc()
