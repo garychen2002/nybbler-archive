@@ -93,8 +93,15 @@ function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
   }
 }
 
-watch(automergeDocumentHandle, () => {
-  automergeDocumentHandle.value?.on('change', ({ doc }) => {
+watch(automergeDocumentHandle, async () => {
+  if (!automergeDocumentHandle.value) return
+
+  const doc = await automergeDocumentHandle.value.doc()
+  if (doc) {
+    updateFromAutomergeDocument(doc)
+  }
+
+  automergeDocumentHandle.value.on('change', ({ doc }) => {
     updateFromAutomergeDocument(doc)
   })
 })
