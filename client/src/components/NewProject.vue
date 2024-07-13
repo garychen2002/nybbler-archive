@@ -24,7 +24,10 @@ async function submitNewProjectForm() {
 </script>
 
 <template>
-  <VaButton class="ms-auto" @click="showNewProjectForm">new project</VaButton>
+  <VaButton class="ms-auto" @click="showNewProjectForm">
+    new project
+    <VaIcon name="add" class="ms-2" />
+  </VaButton>
 
   <VaModal v-model="showNewProjectModal" hide-default-actions size="small">
     <h3 class="va-h6 mb-4">new project</h3>
