@@ -1,7 +1,6 @@
+FROM node:20
 ARG CLIENT_ID
 ARG CLIENT_SECRET
-
-FROM node:20
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
