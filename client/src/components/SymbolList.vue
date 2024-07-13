@@ -10,11 +10,14 @@ defineProps<{
   symbols: BinarySymbol[]
   selectedSymbol?: BinarySymbol
 
-  symbolOverrides: CollabSymbolOverrides
+  overrides: CollabSymbolOverrides
+
+  isBookmarkList?: boolean
 }>()
 
 defineEmits<{
   rename: [symbol: BinarySymbol]
+  bookmark: [symbol: BinarySymbol]
 }>()
 </script>
 
@@ -39,15 +42,26 @@ defineEmits<{
           'selected-symbol': symbol.address === selectedSymbol?.address
         }"
       >
-        {{ symbolOverrides[symbol.address] ?? symbol.name }}
-        <VaButton
-          size="small"
-          preset="secondary"
-          class="invisible group-hover:visible"
-          @click="$emit('rename', symbol)"
-        >
-          <VaIcon name="edit" />
-        </VaButton>
+        {{ overrides[symbol.address] ?? symbol.name }}
+
+        <div class="invisible flex gap-1 group-hover:visible">
+          <VaButton
+            size="small"
+            preset="primary"
+            :title="isBookmarkList ? 'unbookmark' : 'bookmark'"
+            @click.prevent="$emit('bookmark', symbol)"
+          >
+            <VaIcon :name="isBookmarkList ? 'bookmark_remove' : 'bookmark_add'" />
+          </VaButton>
+          <VaButton
+            size="small"
+            preset="primary"
+            title="rename"
+            @click.prevent="$emit('rename', symbol)"
+          >
+            <VaIcon name="edit" />
+          </VaButton>
+        </div>
       </div>
     </VaListItem>
   </VaList>

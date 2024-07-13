@@ -4,6 +4,9 @@ export type CollabProject = {
 
 export type CollabBinary = {
   symbolOverrides?: CollabSymbolOverrides
+  bookmarkedAddresses?: CollabBookmarkedAddresses
 }
 
 export type CollabSymbolOverrides = Record<string, string>
+export type CollabBookmarkedAddresses = string[]
+

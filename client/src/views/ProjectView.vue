@@ -4,10 +4,16 @@ import FileUpload from '@/components/FileUpload.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
 import SymbolList from '@/components/SymbolList.vue'
 import type { BinarySymbol } from '@/models/binaries/binary'
-import type { CollabProject, CollabSymbolOverrides } from '@/models/collab'
+import type {
+  CollabBookmarkedAddresses,
+  CollabProject,
+  CollabSymbolOverrides
+} from '@/models/collab'
 import type { Project } from '@/models/project'
 import { apiProjects } from '@/services/api'
 import { repo } from '@/services/automerge'
+import type { Doc } from '@automerge/automerge-repo'
+import { indexOf } from 'lodash'
 import { computed, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { VaInnerLoading } from 'vuestic-ui'
@@ -70,17 +76,65 @@ watch(selectedBinaryID, (newValue) => {
   })
 })
 
-const symbolOverrides = ref<CollabSymbolOverrides>()
+const symbolOverrides = ref<CollabSymbolOverrides>({})
+const bookmarkedAddresses = ref<CollabBookmarkedAddresses>([])
+
 const automergeDocumentHandle = computed(() =>
   project.value ? repo.find<CollabProject>(project.value.automergeDocumentId) : undefined
 )
+
+function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
+  if (selectedBinaryID.value) {
+    symbolOverrides.value = doc.binaries?.[selectedBinaryID.value].symbolOverrides ?? {}
+    bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value].bookmarkedAddresses ?? []
+  }
+}
+
 watch(automergeDocumentHandle, () => {
   automergeDocumentHandle.value?.on('change', ({ doc }) => {
-    if (selectedBinaryID.value) {
-      symbolOverrides.value = doc.binaries?.[selectedBinaryID.value].symbolOverrides
-    }
+    updateFromAutomergeDocument(doc)
   })
 })
+
+const bookmarkedAddressesSet = computed(() => new Set(bookmarkedAddresses.value))
+const bookmarkedSymbols = computed(
+  () =>
+    selectedBinary.value?.symbols.filter((symbol) =>
+      bookmarkedAddressesSet.value.has(symbol.address)
+    ) ?? []
+)
+const nonBookmarkedSymbols = computed(
+  () =>
+    selectedBinary.value?.symbols.filter(
+      (symbol) => !bookmarkedAddressesSet.value.has(symbol.address)
+    ) ?? []
+)
+
+async function toggleSymbolBookmarked(symbol: BinarySymbol) {
+  if (!automergeDocumentHandle.value) return
+
+  await automergeDocumentHandle.value.whenReady()
+  automergeDocumentHandle.value.change((doc) => {
+    if (selectedBinaryID.value) {
+      doc.binaries ??= {}
+      doc.binaries[selectedBinaryID.value] ??= {}
+      doc.binaries[selectedBinaryID.value].bookmarkedAddresses ??= []
+
+      const index = indexOf(
+        doc.binaries[selectedBinaryID.value].bookmarkedAddresses,
+        symbol.address
+      )
+      if (index === -1) {
+        // Bookmark this symbol
+        doc.binaries[selectedBinaryID.value].bookmarkedAddresses!.push(symbol.address)
+      } else {
+        // Unbookmark this symbol
+        doc.binaries[selectedBinaryID.value].bookmarkedAddresses!.splice(index, 1)
+      }
+    }
+  })
+  updateFromAutomergeDocument((await automergeDocumentHandle.value.doc())!)
+}
 
 const showRenameSymbolModal = ref(false)
 const symbolToRename = ref<BinarySymbol>()
@@ -103,6 +157,7 @@ async function submitRenameSymbol(newName: string) {
       doc.binaries[selectedBinaryID.value].symbolOverrides![symbolToRename.value.address] = newName
     }
   })
+  updateFromAutomergeDocument((await automergeDocumentHandle.value.doc())!)
 }
 </script>
 
@@ -128,13 +183,27 @@ async function submitRenameSymbol(newName: string) {
             <div class="flex flex-col gap-2 p-4">
               <h2 class="va-h6">symbols</h2>
 
-              <div class="h-[55vh] rounded-sm border-2 border-solid border-primary p-2">
+              <div class="h-[20vh] rounded-sm border-2 border-solid border-primary p-2">
                 <SymbolList
                   :projectId="project.id"
                   :binaryId="selectedBinary.id"
-                  :symbols="selectedBinary.symbols"
+                  :symbols="bookmarkedSymbols"
                   :selectedSymbol="selectedSymbol"
-                  :symbolOverrides="symbolOverrides ?? {}"
+                  :overrides="symbolOverrides ?? {}"
+                  isBookmarkList
+                  @bookmark="toggleSymbolBookmarked"
+                  @rename="showRenameSymbol"
+                />
+              </div>
+
+              <div class="h-[35vh] rounded-sm border-2 border-solid border-primary p-2">
+                <SymbolList
+                  :projectId="project.id"
+                  :binaryId="selectedBinary.id"
+                  :symbols="nonBookmarkedSymbols"
+                  :selectedSymbol="selectedSymbol"
+                  :overrides="symbolOverrides ?? {}"
+                  @bookmark="toggleSymbolBookmarked"
                   @rename="showRenameSymbol"
                 />
               </div>
@@ -153,8 +222,12 @@ async function submitRenameSymbol(newName: string) {
     </div>
 
     <RenameSymbolModal
-      :show="showRenameSymbolModal"
-      :currentName="symbolToRename?.name"
+      v-model:show="showRenameSymbolModal"
+      :currentName="
+        symbolToRename
+          ? symbolOverrides?.[symbolToRename.address] ?? symbolToRename.name
+          : undefined
+      "
       @submit="submitRenameSymbol"
     />
   </VaInnerLoading>
