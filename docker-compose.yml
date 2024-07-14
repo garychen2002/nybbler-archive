@@ -44,6 +44,7 @@ services:
       - LETSENCRYPT_HOST=api.nybbler.me
       - CORS_ORIGIN=https://nybbler.me
       - POSTGRES_URL=postgres://nybbler:nybbler@nybbler-postgres:5432/nybbler
+      - VIRTUAL_MAX_UPLOAD=8m
   redis:
     image: redis:7.2.5-alpine
     container_name: nybbler-redis
