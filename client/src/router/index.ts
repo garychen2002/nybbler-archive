@@ -1,3 +1,4 @@
+import { apiUsers } from '@/services/api'
 import { signIn } from '@/services/auth'
 import HomeView from '@/views/HomeView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -60,6 +61,24 @@ const router = createRouter({
       }
     }
   ]
+})
+
+const { VITE_API_BASE_URL } = import.meta.env
+
+router.beforeEach(async (to) => {
+  try {
+    await apiUsers.get('/me')
+  } catch {
+    switch (to.name) {
+      case 'home':
+      case 'about':
+      case 'callback':
+        return
+      default:
+        window.location.href = `${VITE_API_BASE_URL}/auth/signup`
+        throw new Error('not authenticated')
+    }
+  }
 })
 
 export default router
