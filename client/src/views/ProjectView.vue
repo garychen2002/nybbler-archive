@@ -99,8 +99,8 @@ const { userStates, broadcastUserState, stopBroadcastingUserState, listenForUser
 
 function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
   if (selectedBinaryID.value) {
-    symbolOverrides.value = doc.binaries?.[selectedBinaryID.value].symbolOverrides ?? {}
-    bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value].bookmarkedAddresses ?? []
+    symbolOverrides.value = doc.binaries?.[selectedBinaryID.value]?.symbolOverrides ?? {}
+    bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value]?.bookmarkedAddresses ?? []
   }
 
   broadcastUserState(automergeDocumentHandle.value, {
