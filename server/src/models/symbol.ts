@@ -1,5 +1,14 @@
-import { BelongsTo, Column, ForeignKey, Model, Table } from "sequelize-typescript";
+import {
+  AllowNull,
+  BelongsTo,
+  Column,
+  ForeignKey,
+  HasOne,
+  Model,
+  Table,
+} from "sequelize-typescript";
 import { Binary } from "./binary.js";
+import { Function } from "./function.js";
 
 @Table
 export class Symbol extends Model<Symbol> {
@@ -8,15 +17,6 @@ export class Symbol extends Model<Symbol> {
 
   @Column
   declare address: string;
-
-  @Column
-  declare type: string;
-
-  @Column
-  declare namespace: string;
-
-  @Column
-  declare source: string;
 
   /** Owning binary. */
   @BelongsTo(() => Binary)
@@ -27,4 +27,12 @@ export class Symbol extends Model<Symbol> {
   @ForeignKey(() => Binary)
   @Column
   declare binaryId: number;
+
+  @HasOne(() => Function)
+  function?: ReturnType<() => Function>;
+
+  @ForeignKey(() => Function)
+  @AllowNull
+  @Column
+  declare functionId: number;
 }
