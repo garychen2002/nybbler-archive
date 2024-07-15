@@ -12,7 +12,7 @@ import {
 export const authRouter = Router();
 
 authRouter.get("/signup", (req, res) => {
-  res.redirect(`https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}`);
+  res.redirect(`https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}`);
 });
 
 authRouter.get(
@@ -25,6 +25,7 @@ authRouter.get(
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
         code,
+        redirect_uri: process.env.REDIRECT_URI
       },
       headers: {
         accept: "application/json",

@@ -18,4 +18,5 @@ RUN wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghid
 ENV GHIDRA_INSTALL_PATH=/usr/src/app/dist/ghidra
 ENV CLIENT_ID=${CLIENT_ID}
 ENV CLIENT_SECRET=${CLIENT_SECRET}
+ENV REDIRECT_URI=https://nybbler.me/auth/callback
 CMD [ "node", "src/app.js" ]
