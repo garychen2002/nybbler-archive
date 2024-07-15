@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import type { BinarySymbol } from '@/models/binaries/binary'
+import type { BinarySymbol } from '@/models/binary'
 import type { CollabSymbolOverrides } from '@/models/collab'
+import { sortBy } from 'lodash'
+import { computed } from 'vue'
 import { VaButton, VaIcon, VaList, VaListItem } from 'vuestic-ui'
 
-defineProps<{
+const props = defineProps<{
   projectId: number
   binaryId: number
 
@@ -19,22 +21,37 @@ defineEmits<{
   rename: [symbol: BinarySymbol]
   bookmark: [symbol: BinarySymbol]
 }>()
+
+const sortedSymbols = computed(() =>
+  sortBy(
+    props.symbols,
+    (symbol) => symbol.functionId,
+    (symbol) => symbol.address
+  )
+)
 </script>
 
 <template>
   <VaList class="text-xs">
     <VaListItem
-      v-for="symbol in symbols"
+      v-for="symbol in sortedSymbols"
       :key="symbol.address"
-      :to="{
-        name: 'project-binary-address',
-        params: {
-          projectId: projectId,
-          binaryId: binaryId,
-          address: symbol.address
-        }
+      :to="
+        symbol.functionId
+          ? {
+              name: 'project-binary-function',
+              params: {
+                projectId: projectId,
+                binaryId: binaryId,
+                functionId: symbol.functionId
+              }
+            }
+          : ''
+      "
+      class="group"
+      :class="{
+        'va-link': !!symbol.functionId
       }"
-      class="va-link group"
     >
       <div
         class="m-1 flex w-full items-center justify-between rounded p-1 font-mono"

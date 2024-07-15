@@ -10,6 +10,7 @@ import { runAutomergeService } from "./automerge.js";
 import { initModels } from "./models/_init.js";
 import { authRouter } from "./routers/auth_router.js";
 import { binaryRouter } from "./routers/binary_router.js";
+import { functionRouter } from "./routers/function_router.js";
 import { projectRouter } from "./routers/project_router.js";
 import { userRouter } from "./routers/user_router.js";
 import { requireAuthenticated as requireAuthentication } from "./shared.js";
@@ -48,6 +49,7 @@ app.use(cors(corsOptions));
   app.use("/api/projects", requireAuthentication, projectRouter);
   app.use("/api/users", requireAuthentication, userRouter);
   app.use("/api/binaries", requireAuthentication, binaryRouter);
+  app.use("/api/functions", requireAuthentication, functionRouter);
 
   // https://automerge.org/docs/repositories/networking/#usage-with-express
   // https://stackoverflow.com/questions/28666527/how-to-handle-http-upgrade-in-expressjs

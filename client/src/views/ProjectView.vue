@@ -5,7 +5,7 @@ import PageContent from '@/components/PageContent.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
 import SymbolList from '@/components/SymbolList.vue'
 import UserBubble from '@/components/UserBubble.vue'
-import type { BinarySymbol } from '@/models/binaries/binary'
+import type { BinarySymbol } from '@/models/binary'
 import type {
   CollabBookmarkedAddresses,
   CollabProject,
@@ -27,7 +27,7 @@ import { VaIcon, VaInnerLoading } from 'vuestic-ui'
 const props = defineProps<{
   projectId: string
   binaryId?: string
-  address?: string
+  functionId?: string
 }>()
 
 const project = ref<Project>()
@@ -206,7 +206,7 @@ async function submitRenameSymbol(newName: string) {
             {{ project.name }}
           </h1>
 
-          <FileUpload :projectId="props.projectId" class="ms-auto" />
+          <FileUpload :projectId="props.projectId" @complete="fetchProject" class="ms-auto" />
         </div>
 
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">
@@ -264,14 +264,14 @@ async function submitRenameSymbol(newName: string) {
               </div>
             </pane>
 
-            <pane min-size="40">
+            <pane min-size="40" size="60">
               <div class="flex h-full flex-col gap-2 p-4">
                 <h2 class="va-h6">disassembly</h2>
 
                 <DisassemblyListing
                   :project="project"
                   :binary="selectedBinary"
-                  :address="address"
+                  :functionId="functionId"
                 />
               </div>
             </pane>

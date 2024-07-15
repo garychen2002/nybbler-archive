@@ -1,5 +1,5 @@
 import type { DocumentId } from '@automerge/automerge-repo'
-import type { Binary } from './binaries/binary'
+import type { Binary } from './binary'
 import type { User } from './user'
 
 export type Project = {
