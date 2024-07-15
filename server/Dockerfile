@@ -15,6 +15,27 @@ RUN wget https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghid
     && unzip ghidra.zip \
     && rm ghidra.zip \
     && mv ghidra_* ghidra
+
+# https://stackoverflow.com/a/77320709
+RUN apt-get update && \
+    apt-get install -y -q --allow-unauthenticated \
+    git \
+    sudo
+RUN useradd -m -s /bin/zsh linuxbrew && \
+    usermod -aG sudo linuxbrew &&  \
+    mkdir -p /home/linuxbrew/.linuxbrew && \
+    chown -R linuxbrew: /home/linuxbrew/.linuxbrew
+USER linuxbrew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+USER root
+RUN chown -R $CONTAINER_USER: /home/linuxbrew/.linuxbrew
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
+RUN git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew
+USER linuxbrew
+RUN brew update
+RUN brew install radare2
+USER root
+
 ENV GHIDRA_INSTALL_PATH=/usr/src/app/dist/ghidra
 ENV CLIENT_ID=${CLIENT_ID}
 ENV CLIENT_SECRET=${CLIENT_SECRET}
