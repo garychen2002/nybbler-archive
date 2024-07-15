@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Binary } from '@/models/binaries/binary'
+import type { Binary } from '@/models/binary'
 import type { Project } from '@/models/project'
 import { ref, watchEffect } from 'vue'
 

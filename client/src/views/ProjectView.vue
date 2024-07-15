@@ -5,7 +5,7 @@ import PageContent from '@/components/PageContent.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
 import SymbolList from '@/components/SymbolList.vue'
 import UserBubble from '@/components/UserBubble.vue'
-import type { BinarySymbol } from '@/models/binaries/binary'
+import type { BinarySymbol } from '@/models/binary'
 import type {
   CollabBookmarkedAddresses,
   CollabProject,
