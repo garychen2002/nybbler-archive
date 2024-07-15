@@ -14,7 +14,7 @@ const showUploadModal = ref(false)
 
 const toast = useToast()
 
-const FILE_SIZE_LIMIT = 8_388_608 // 8mib
+const FILE_SIZE_LIMIT = 32 * 1024 * 1024 // 32 mib in bytes
 // defined server side in docker compose
 
 const submitFile = async () => {
