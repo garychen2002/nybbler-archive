@@ -27,7 +27,7 @@ import { VaIcon, VaInnerLoading } from 'vuestic-ui'
 const props = defineProps<{
   projectId: string
   binaryId?: string
-  address?: string
+  functionId?: string
 }>()
 
 const project = ref<Project>()
@@ -264,14 +264,14 @@ async function submitRenameSymbol(newName: string) {
               </div>
             </pane>
 
-            <pane min-size="40">
+            <pane min-size="40" size="60">
               <div class="flex h-full flex-col gap-2 p-4">
                 <h2 class="va-h6">disassembly</h2>
 
                 <DisassemblyListing
                   :project="project"
                   :binary="selectedBinary"
-                  :address="address"
+                  :functionId="functionId"
                 />
               </div>
             </pane>
