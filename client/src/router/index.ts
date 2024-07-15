@@ -36,7 +36,7 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/projects/:projectId/binaries/:binaryId/function/:functionId?',
+      path: '/projects/:projectId/binaries/:binaryId/functions/:functionId?',
       name: 'project-binary-function',
       component: ProjectView,
       props: true
