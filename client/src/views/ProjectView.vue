@@ -206,7 +206,7 @@ async function submitRenameSymbol(newName: string) {
             {{ project.name }}
           </h1>
 
-          <FileUpload :projectId="props.projectId" class="ms-auto" />
+          <FileUpload :projectId="props.projectId" @complete="fetchProject" class="ms-auto" />
         </div>
 
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">

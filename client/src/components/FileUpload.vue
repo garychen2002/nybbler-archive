@@ -9,6 +9,10 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const emit = defineEmits<{
+  complete: []
+}>()
+
 const selectedFiles = ref<File[]>([])
 const showUploadModal = ref(false)
 
@@ -23,7 +27,7 @@ const submitFile = async () => {
     return
   }
 
-  if (selectedFiles.value.some(file => file.size > FILE_SIZE_LIMIT)) {
+  if (selectedFiles.value.some((file) => file.size > FILE_SIZE_LIMIT)) {
     alert('A file is too large.')
     return
   }
@@ -48,6 +52,7 @@ const submitFile = async () => {
         console.error(error)
       } finally {
         toast.close(toastID!)
+        emit('complete')
       }
     })
   )
