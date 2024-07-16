@@ -46,10 +46,10 @@ onBeforeRouteUpdate(async (to, from) => {
 })
 
 const selectedBinary = computed(() =>
-  project.value?.binaries.find((binary) => `${binary.id}` === props.binaryId)
+  project.value?.binaries.find((binary) => binary.id === Number(props.binaryId))
 )
 const selectedSymbol = computed(() =>
-  selectedBinary.value?.symbols.find((symbol) => symbol.address === props.address)
+  selectedBinary.value?.symbols.find((symbol) => symbol.functionId === Number(props.functionId))
 )
 
 const router = useRouter()
@@ -82,6 +82,14 @@ watch(selectedBinaryID, (newValue) => {
   })
 })
 
+watch(selectedSymbol, () => {
+  broadcastUserState(automergeDocumentHandle.value, {
+    user: meStore.user,
+    binaryID: selectedBinaryID.value,
+    functionID: selectedSymbol.value?.functionId
+  })
+})
+
 const symbolOverrides = ref<CollabSymbolOverrides>({})
 const bookmarkedAddresses = ref<CollabBookmarkedAddresses>([])
 
@@ -105,7 +113,8 @@ function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
 
   broadcastUserState(automergeDocumentHandle.value, {
     user: meStore.user,
-    binaryID: selectedBinaryID.value
+    binaryID: selectedBinaryID.value,
+    functionID: selectedSymbol.value?.functionId
   })
 }
 
@@ -238,6 +247,7 @@ async function submitRenameSymbol(newName: string) {
                         :symbols="bookmarkedSymbols"
                         :selectedSymbol="selectedSymbol"
                         :overrides="symbolOverrides ?? {}"
+                        :userStates="userStates"
                         isBookmarkList
                         @bookmark="toggleSymbolBookmarked"
                         @rename="showRenameSymbol"
@@ -255,6 +265,7 @@ async function submitRenameSymbol(newName: string) {
                         :symbols="nonBookmarkedSymbols"
                         :selectedSymbol="selectedSymbol"
                         :overrides="symbolOverrides ?? {}"
+                        :userStates="userStates"
                         @bookmark="toggleSymbolBookmarked"
                         @rename="showRenameSymbol"
                       />

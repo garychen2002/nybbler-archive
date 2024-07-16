@@ -6,6 +6,7 @@ import { ref, watchEffect } from 'vue'
 export type CollabUserState = {
   user?: User
   binaryID?: number
+  functionID?: number
 }
 
 export function useCollabUserState<Doc>() {

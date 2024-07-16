@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { BinarySymbol } from '@/models/binary'
 import type { CollabSymbolOverrides } from '@/models/collab'
+import type { CollabUserState } from '@/services/collab_user_state'
 import { sortBy } from 'lodash'
 import { computed } from 'vue'
 import { VaButton, VaIcon, VaList, VaListItem } from 'vuestic-ui'
+import UserBubble from './UserBubble.vue'
 
 const props = defineProps<{
   projectId: number
@@ -13,6 +15,7 @@ const props = defineProps<{
   selectedSymbol?: BinarySymbol
 
   overrides: CollabSymbolOverrides
+  userStates: CollabUserState[]
 
   isBookmarkList?: boolean
 }>()
@@ -54,12 +57,23 @@ const sortedSymbols = computed(() =>
       }"
     >
       <div
-        class="m-1 flex w-full items-center justify-between rounded p-1 font-mono"
+        class="m-1 flex w-full items-center justify-between rounded p-1"
         :class="{
           'selected-symbol': symbol.address === selectedSymbol?.address
         }"
       >
-        {{ overrides[symbol.address] ?? symbol.name }}
+        <div class="font-mono">
+          {{ overrides[symbol.address] ?? symbol.name }}
+
+          <UserBubble
+            v-for="userState in userStates.filter(
+              (state) => state.functionID === symbol.functionId
+            )"
+            :key="userState.user!.id"
+            :user="userState.user!"
+            class="ms-1"
+          />
+        </div>
 
         <div class="invisible flex gap-1 group-hover:visible">
           <VaButton
