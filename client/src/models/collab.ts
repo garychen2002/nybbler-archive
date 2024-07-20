@@ -9,4 +9,3 @@ export type CollabBinary = {
 
 export type CollabSymbolOverrides = Record<string, string>
 export type CollabBookmarkedAddresses = string[]
-

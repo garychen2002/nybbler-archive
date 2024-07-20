@@ -52,6 +52,10 @@ const selectedSymbol = computed(() =>
   selectedBinary.value?.symbols.find((symbol) => symbol.functionId === Number(props.functionId))
 )
 
+const VirusTotalLink = computed(
+  () => 'https://www.virustotal.com/gui/file/' + selectedBinary.value?.md5hash
+)
+
 const router = useRouter()
 
 // Default binary selection
@@ -214,7 +218,6 @@ async function submitRenameSymbol(newName: string) {
           <h1 class="va-h6">
             {{ project.name }}
           </h1>
-
           <FileUpload :projectId="props.projectId" @complete="fetchProject" class="ms-auto" />
         </div>
 
@@ -230,7 +233,13 @@ async function submitRenameSymbol(newName: string) {
               />
             </VaTab>
           </template>
-
+          <template v-if="selectedBinary?.md5hash">
+            <a :href="`${VirusTotalLink}`">
+              <VaButton preset="primary" class="ms-auto" title="VirusTotal analysis">
+                VirusTotal Analysis
+              </VaButton>
+            </a>
+          </template>
           <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
             <pane min-size="20">
               <div class="flex h-full flex-col gap-2 p-4">
