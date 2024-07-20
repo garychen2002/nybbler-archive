@@ -234,9 +234,10 @@ async function submitRenameSymbol(newName: string) {
             </VaTab>
           </template>
           <template v-if="selectedBinary?.md5hash">
-            <a :href="`${VirusTotalLink}`">
+            <a :href="`${VirusTotalLink}`" target="_blank" rel="noreferrer">
               <VaButton preset="primary" class="ms-auto" title="VirusTotal analysis">
                 VirusTotal Analysis
+                <VaIcon name="launch" />
               </VaButton>
             </a>
           </template>
