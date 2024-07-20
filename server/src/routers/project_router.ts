@@ -12,6 +12,7 @@ import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
 import { Symbol } from "../models/symbol.js";
 import { User } from "../models/user.js";
+import { getChecksum } from "../../helpers/checksum.js"
 import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
@@ -240,11 +241,12 @@ projectRouter.post(
     }
 
     const file = req.file;
-
+    const md5hash = await getChecksum(file.path);
     const binary = await Binary.create({
       name: file.originalname,
       file: file,
       projectId: req.body.projectId,
+      md5hash: md5hash,
     });
 
     const { symbols, codeUnits, instructions } = await analyze_ghidra(file.path);

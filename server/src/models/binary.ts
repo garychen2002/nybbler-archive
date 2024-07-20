@@ -32,4 +32,7 @@ export class Binary extends Model<Binary> {
   /** Symbols found in this binary. */
   @HasMany(() => Symbol)
   symbols!: Symbol[];
+
+  @Column
+  declare md5hash: string;
 }
