@@ -42,17 +42,17 @@ import { RedisConnectionOptions } from "./shared.js";
 
 async function handleAnalyze(binaryId: number | undefined) {
   if (binaryId === undefined) {
-    return console.error(`binary analysis: ID of Binary record required`);
+    throw new Error(`binary analysis: ID of Binary record required`);
   }
 
   const binary = await Binary.findByPk(binaryId);
   if (!binary) {
-    return console.error(`binary analysis: no Binary record with ID: ${binaryId}`);
+    throw new Error(`binary analysis: no Binary record with ID: ${binaryId}`);
   }
 
   const { symbols, instructions } = await analyze_ghidra(binary.file.path);
   if (!symbols || !instructions) {
-    return console.error(`binary analysis: Ghidra analysis failed`);
+    throw new Error(`binary analysis: Ghidra analysis failed`);
   }
 
   const symbolsByAddress = keyBy(symbols, ({ address }) => address);
