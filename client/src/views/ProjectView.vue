@@ -7,6 +7,7 @@ import SymbolList from '@/components/SymbolList.vue'
 import UserBubble from '@/components/UserBubble.vue'
 import type { BinarySymbol } from '@/models/binary'
 import type {
+  CollabBinaryAnalysisStatus,
   CollabBookmarkedAddresses,
   CollabProject,
   CollabSymbolOverrides
@@ -17,7 +18,7 @@ import { repo } from '@/services/automerge'
 import { useCollabUserState } from '@/services/collab_user_state'
 import { useMeStore } from '@/stores/me'
 import type { Doc } from '@automerge/automerge-repo'
-import { indexOf } from 'lodash'
+import { cloneDeep, indexOf, isEqual, mapValues } from 'lodash'
 import { Pane, Splitpanes } from 'splitpanes'
 import 'splitpanes/dist/splitpanes.css'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
@@ -90,6 +91,11 @@ watch(selectedSymbol, () => {
   })
 })
 
+const analysisStatuses = ref<Record<number, CollabBinaryAnalysisStatus>>({})
+const analysisStatus = computed(() =>
+  selectedBinaryID.value ? analysisStatuses.value[selectedBinaryID.value] : undefined
+)
+
 const symbolOverrides = ref<CollabSymbolOverrides>({})
 const bookmarkedAddresses = ref<CollabBookmarkedAddresses>([])
 
@@ -106,9 +112,17 @@ const { userStates, broadcastUserState, stopBroadcastingUserState, listenForUser
   useCollabUserState()
 
 function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
+  const prevAnalysisStatuses = cloneDeep(analysisStatuses.value)
+  const newAnalysisStatuses = mapValues(doc.binaries ?? {}, (binary) => binary.analysisStatus)
+
   if (selectedBinaryID.value) {
+    analysisStatuses.value = newAnalysisStatuses
     symbolOverrides.value = doc.binaries?.[selectedBinaryID.value]?.symbolOverrides ?? {}
     bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value]?.bookmarkedAddresses ?? []
+  }
+
+  if (!isEqual(prevAnalysisStatuses, newAnalysisStatuses)) {
+    fetchProject()
   }
 
   broadcastUserState(automergeDocumentHandle.value, {
@@ -200,6 +214,27 @@ async function submitRenameSymbol(newName: string) {
   })
   updateFromAutomergeDocument((await automergeDocumentHandle.value.doc())!)
 }
+
+const statusText = computed(() => {
+  switch (analysisStatus.value) {
+    case 'complete':
+      return 'analysis complete'
+    case 'failed':
+      return 'analysis failed; please try again, or report a bug'
+    default:
+      return 'analysis pending, please wait…'
+  }
+})
+const statusColor = computed(() => {
+  switch (analysisStatus.value) {
+    case 'complete':
+      return 'success'
+    case 'failed':
+      return 'danger'
+    default:
+      return 'primary'
+  }
+})
 </script>
 
 <template>
@@ -222,71 +257,85 @@ async function submitRenameSymbol(newName: string) {
           <template #tabs>
             <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
               <span class="me-1">{{ binary.name }}</span>
-              <UserBubble
-                v-for="userState in userStates.filter((state) => state.binaryID === binary.id)"
-                :key="userState.user!.id"
-                :user="userState.user!"
-                class="ms-1"
+              <VaInnerLoading
+                v-if="!analysisStatuses[binary.id]"
+                loading
+                :size="20"
+                class="ms-2 inline-block"
               />
+              <template v-else>
+                <UserBubble
+                  v-for="userState in userStates.filter((state) => state.binaryID === binary.id)"
+                  :key="userState.user!.id"
+                  :user="userState.user!"
+                  class="ms-1"
+                />
+              </template>
             </VaTab>
           </template>
 
-          <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
-            <pane min-size="20">
-              <div class="flex h-full flex-col gap-2 p-4">
-                <h2 class="va-h6">symbols</h2>
+          <div class="ms-4 mt-4 text-sm font-semibold" v-if="selectedBinary">
+            status: <span :style="{ color: `var(--va-${statusColor})` }">{{ statusText }}</span>
+          </div>
 
-                <div class="flex flex-col">
-                  <div class="pb-1">
-                    <div
-                      class="h-[28vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                    >
-                      <SymbolList
-                        :projectId="project.id"
-                        :binaryId="selectedBinary.id"
-                        :symbols="bookmarkedSymbols"
-                        :selectedSymbol="selectedSymbol"
-                        :overrides="symbolOverrides ?? {}"
-                        :userStates="userStates"
-                        isBookmarkList
-                        @bookmark="toggleSymbolBookmarked"
-                        @rename="showRenameSymbol"
-                      />
+          <VaInnerLoading v-if="selectedBinary" :loading="!analysisStatus">
+            <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
+              <pane min-size="20">
+                <div class="flex h-full flex-col gap-2 p-4">
+                  <h2 class="va-h6">symbols</h2>
+
+                  <div class="flex flex-col">
+                    <div class="pb-1">
+                      <div
+                        class="h-[27vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                      >
+                        <SymbolList
+                          :projectId="project.id"
+                          :binaryId="selectedBinary.id"
+                          :symbols="bookmarkedSymbols"
+                          :selectedSymbol="selectedSymbol"
+                          :overrides="symbolOverrides ?? {}"
+                          :userStates="userStates"
+                          isBookmarkList
+                          @bookmark="toggleSymbolBookmarked"
+                          @rename="showRenameSymbol"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="pt-1">
-                    <div
-                      class="h-[40.49vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                    >
-                      <SymbolList
-                        :projectId="project.id"
-                        :binaryId="selectedBinary.id"
-                        :symbols="nonBookmarkedSymbols"
-                        :selectedSymbol="selectedSymbol"
-                        :overrides="symbolOverrides ?? {}"
-                        :userStates="userStates"
-                        @bookmark="toggleSymbolBookmarked"
-                        @rename="showRenameSymbol"
-                      />
+                    <div class="pt-1">
+                      <div
+                        class="h-[39.04vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                      >
+                        <SymbolList
+                          :projectId="project.id"
+                          :binaryId="selectedBinary.id"
+                          :symbols="nonBookmarkedSymbols"
+                          :selectedSymbol="selectedSymbol"
+                          :overrides="symbolOverrides ?? {}"
+                          :userStates="userStates"
+                          @bookmark="toggleSymbolBookmarked"
+                          @rename="showRenameSymbol"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </pane>
+              </pane>
 
-            <pane min-size="40" size="60">
-              <div class="flex h-full flex-col gap-2 p-4">
-                <h2 class="va-h6">disassembly</h2>
+              <pane min-size="40" size="60">
+                <div class="flex h-full flex-col gap-2 p-4">
+                  <h2 class="va-h6">disassembly</h2>
 
-                <DisassemblyListing
-                  :project="project"
-                  :binary="selectedBinary"
-                  :functionId="functionId"
-                />
-              </div>
-            </pane>
-          </splitpanes>
+                  <DisassemblyListing
+                    :project="project"
+                    :binary="selectedBinary"
+                    :functionId="functionId"
+                  />
+                </div>
+              </pane>
+            </splitpanes>
+          </VaInnerLoading>
         </VaTabs>
       </div>
     </VaInnerLoading>
