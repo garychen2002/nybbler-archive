@@ -1,5 +1,5 @@
 import { Chunk, StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo";
-import { Op, WhereOptions } from "sequelize";
+import { WhereOptions } from "sequelize";
 import { AutomergeEntry } from "../models/automerge_entry.js";
 
 function queryFromAutomergeKey(key: StorageKey): WhereOptions<AutomergeEntry> {
@@ -20,7 +20,6 @@ function automergeChunkFromEntry(entry: AutomergeEntry): Chunk {
 // https://automerge.org/docs/under-the-hood/storage/#the-storage-model
 export class NybblerSqlStorageAdapter implements StorageAdapterInterface {
   async load(key: StorageKey): Promise<Uint8Array | undefined> {
-    await AutomergeEntry.destroy({ where: { id: { [Op.gt]: 0 } } });
     const entry = await AutomergeEntry.findOne({
       attributes: ["value"],
       where: queryFromAutomergeKey(key),
