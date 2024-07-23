@@ -36,6 +36,8 @@ import { RedisConnectionOptions } from "./shared.js";
     },
     { connection: RedisConnectionOptions },
   );
+
+  console.log("Analysis worker started");
 })();
 
 async function handleAnalyze(binaryId: number | undefined) {
