@@ -31,7 +31,7 @@ export function runAnalysisResponseService() {
 
     switch (job?.name) {
       case "Analyze":
-        return await handleAnalyzeResponse(job, "complete");
+        return await handleAnalyzeResponse(job, "failed");
 
       default:
         // Some other job, we don't care
