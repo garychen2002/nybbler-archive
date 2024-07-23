@@ -47,6 +47,8 @@ services:
       - POSTGRES_URL=postgres://nybbler:nybbler@nybbler-postgres:5432/nybbler
       - REDIS_HOST=nybbler-redis
       - REDIS_PORT=6379
+    volumes:
+      - uploads-volume:/usr/src/app/uploads
   workers:
     image: ghcr.io/utsc-cscc09-programming-on-the-web/nybbler-workers
     container_name: nybbler-workers
@@ -55,6 +57,8 @@ services:
       - POSTGRES_URL=postgres://nybbler:nybbler@nybbler-postgres:5432/nybbler
       - REDIS_HOST=nybbler-redis
       - REDIS_PORT=6379
+    volumes:
+      - uploads-volume:/usr/src/app/uploads
   redis:
     image: redis:7.2.5-alpine
     container_name: nybbler-redis
@@ -76,4 +80,5 @@ services:
       - ./postgres16/:/docker-entrypoint-initdb.d/
 
 volumes:
+  uploads-volume:
   postgres-volume:
