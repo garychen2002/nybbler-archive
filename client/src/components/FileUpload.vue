@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 const selectedFiles = ref<File[]>([])
 const showUploadModal = ref(false)
+const checked = ref(false)
 
 const toast = useToast()
 
@@ -41,6 +42,7 @@ const submitFile = async () => {
       const formData = new FormData()
       formData.append('binary_file', file)
       formData.append('projectId', props.projectId)
+      formData.append('virustotal', checked.value.toString())
       try {
         await apiProjectsBinaries.post(formData)
         toast.notify({ message: `finished analyzing ${file.name}.`, color: 'success' })
@@ -76,7 +78,8 @@ const submitFile = async () => {
       upload-button-text="choose"
       class="cursor-default"
     />
-
+    <input type="checkbox" id="virustotal" v-model="checked" />
+    <label for="virustotal">Upload to VirusTotal</label>
     <template #footer>
       <VaButton class="me-3" preset="secondary" @click="() => (showUploadModal = false)">
         cancel

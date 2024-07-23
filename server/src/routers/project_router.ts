@@ -5,6 +5,7 @@ import { R2Pipe } from "r2pipe-promise";
 import { Op, Transaction } from "sequelize";
 import { sequelize } from "../../datasource.js";
 import { analyze_ghidra } from "../../helpers/analyze.js";
+import { virustotal_upload } from "../../helpers/virustotal_upload.js";
 import { repo } from "../automerge.js";
 import { Binary } from "../models/binary.js";
 import { Function } from "../models/function.js";
@@ -248,6 +249,11 @@ projectRouter.post(
       projectId: req.body.projectId,
       md5hash: md5hash,
     });
+    
+    if (req.body.virustotal === "true")
+      {
+        virustotal_upload(file.path, file.originalname, file.mimetype);
+      }
 
     const { symbols, codeUnits, instructions } = await analyze_ghidra(file.path);
     if (!symbols || !instructions) {
