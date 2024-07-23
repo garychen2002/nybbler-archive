@@ -1,13 +1,10 @@
 import { Router } from "express";
-import { keyBy } from "lodash-es";
 import multer from "multer";
-import { R2Pipe } from "r2pipe-promise";
-import { Op, Transaction } from "sequelize";
+import { CreationAttributes, Op, Transaction } from "sequelize";
 import { sequelize } from "../../datasource.js";
-import { analyze_ghidra } from "../../helpers/analyze.js";
+import { analysisQueue } from "../app.js";
 import { repo } from "../automerge.js";
 import { Binary } from "../models/binary.js";
-import { Function } from "../models/function.js";
 import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
 import { Symbol } from "../models/symbol.js";
@@ -16,7 +13,6 @@ import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
   STATUS_NO_CONTENT,
-  STATUS_SERVER_ERROR,
   catchErrors,
   getAuthenticatedUser,
   paginate,
@@ -128,11 +124,12 @@ projectRouter.delete(
   "/:projectId",
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
+    const user = await getAuthenticatedUser(req);
 
     await sequelize.transaction(
       { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
       async (transaction) => {
-        await Invite.destroy({ transaction, where: { projectId, userId: req.session.user!.id } });
+        await Invite.destroy({ transaction, where: { projectId, userId: user!.id } });
 
         const invitesLeft = await Invite.count({ transaction, where: { projectId } });
         if (!invitesLeft) {
@@ -233,95 +230,23 @@ projectRouter.post(
   "/binaries",
   upload.single("binary_file"),
   catchErrors(async (req, res) => {
-    if (!req.file) {
+    const { file } = req;
+    if (!file) {
       return res.status(STATUS_INVALID_REQUEST).json({
         error: "Invalid input parameters. Expected file",
       });
     }
 
-    const file = req.file;
-
     const binary = await Binary.create({
       name: file.originalname,
-      file: file,
+      file,
       projectId: req.body.projectId,
+    } as CreationAttributes<Binary>);
+
+    await analysisQueue.add("Analyze", {
+      binaryId: binary.id,
     });
 
-    const { symbols, codeUnits, instructions } = await analyze_ghidra(file.path);
-    if (!symbols || !instructions) {
-      return res.status(STATUS_SERVER_ERROR).json({ error: "Server error" });
-    }
-
-    const symbolsByAddress = keyBy(symbols, ({ address }) => address);
-    const foundSymbols: Partial<Symbol>[] = [];
-    const disassembly = instructions
-      .map(({ address, instruction }) => {
-        let label = "";
-        if (address in symbolsByAddress) {
-          const symbol = symbolsByAddress[address];
-          label = `${symbol.name}:\n`;
-          foundSymbols.push(symbol);
-        }
-
-        return `${label}\t${address}\t${instruction}`;
-      })
-      .join("\n");
-
-    await Symbol.bulkCreate(foundSymbols.map((symbol) => ({ ...symbol, binaryId: binary.id })));
-    const symbolRecords = await (binary as any).getSymbols();
-    const symbolRecordsByOffset = keyBy(symbolRecords, ({ address }) =>
-      Number.parseInt(address, 16),
-    );
-
-    // Written with GPT help
-    {
-      // Open the binary file in Radare2
-      //
-      // NOTE(ian): This returns a promise so the await IS NECESSARY.
-      //            r2pipe's type definitions are wrong.
-      const r2 = await R2Pipe.open(file.path);
-
-      try {
-        // Analyze the binary and all its functions
-        await r2.cmd("aaa");
-
-        // Get the list of functions
-        const functionDumps = JSON.parse(await r2.cmd("aflj")).filter(
-          (f: any) => symbolRecordsByOffset[f.offset],
-        );
-
-        await Function.bulkCreate(
-          await Promise.all(
-            functionDumps.map(async (f: any) => ({
-              disassembly: await r2.cmd(`pdf @ ${f.offset}`),
-              symbolId: symbolRecordsByOffset[f.offset].id,
-            })),
-          ),
-        );
-        await Promise.all(
-          functionDumps.map(async (f: any) => {
-            const functionRecord = await Function.findOne({
-              where: {
-                symbolId: symbolRecordsByOffset[f.offset].id,
-              },
-            });
-            const symbolRecord = await Symbol.findOne({
-              where: {
-                id: symbolRecordsByOffset[f.offset].id,
-              },
-            });
-            symbolRecord!.functionId = functionRecord!.id;
-            symbolRecord!.name = f.name ?? symbolRecord!.name;
-            await symbolRecord!.save();
-          }),
-        );
-      } finally {
-        // Close the r2pipe connection
-        r2.quit();
-      }
-    }
-
-    await binary.reload();
-    return res.json(binary);
+    res.status(STATUS_NO_CONTENT).send();
   }),
 );
