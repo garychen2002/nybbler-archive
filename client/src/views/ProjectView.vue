@@ -280,7 +280,7 @@ const statusColor = computed(() => {
 
           <VaInnerLoading v-if="selectedBinary" :loading="!analysisStatus">
             <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
-              <pane min-size="20">
+              <pane min-size="20" size="25">
                 <div class="flex h-full flex-col gap-2 p-4">
                   <h2 class="va-h6">symbols</h2>
 
@@ -323,7 +323,7 @@ const statusColor = computed(() => {
                 </div>
               </pane>
 
-              <pane min-size="40" size="60">
+              <pane min-size="40">
                 <div class="flex h-full flex-col gap-2 p-4">
                   <h2 class="va-h6">disassembly</h2>
 
