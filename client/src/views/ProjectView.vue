@@ -242,8 +242,9 @@ const statusColor = computed(() => {
     <VaInnerLoading :loading="!project">
       <div v-if="project" class="h-full">
         <div class="mb-2 flex">
-          <VaButton to="/projects" preset="primary" class="me-4" title="return to projects">
+          <VaButton to="/projects" preset="primary" class="me-4">
             <VaIcon name="arrow_back" />
+            <tippy target="_parent">return to projects</tippy>
           </VaButton>
 
           <h1 class="va-h6">

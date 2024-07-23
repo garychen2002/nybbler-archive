@@ -76,21 +76,13 @@ const sortedSymbols = computed(() =>
         </div>
 
         <div class="invisible flex gap-1 group-hover:visible">
-          <VaButton
-            size="small"
-            preset="primary"
-            :title="isBookmarkList ? 'unbookmark' : 'bookmark'"
-            @click.prevent="$emit('bookmark', symbol)"
-          >
+          <VaButton size="small" preset="primary" @click.prevent="$emit('bookmark', symbol)">
             <VaIcon :name="isBookmarkList ? 'bookmark_remove' : 'bookmark_add'" />
+            <tippy target="_parent">{{ isBookmarkList ? 'unbookmark' : 'bookmark' }}</tippy>
           </VaButton>
-          <VaButton
-            size="small"
-            preset="primary"
-            title="rename"
-            @click.prevent="$emit('rename', symbol)"
-          >
+          <VaButton size="small" preset="primary" @click.prevent="$emit('rename', symbol)">
             <VaIcon name="edit" />
+            <tippy target="_parent">rename</tippy>
           </VaButton>
         </div>
       </div>
