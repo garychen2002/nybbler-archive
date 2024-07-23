@@ -14,9 +14,7 @@ const output_dir = path.join(__dirname, "..", "projects");
 try {
   mkdirSync(output_dir);
 } catch {}
-const output_projectname = "testproject"; // use the random id of the uploaded file?
 // watch out for user defined names passing into arguments
-const input_filename = path.join("c:\\", "temp", "ascii.txt"); // pass in from uploads
 const scripts_path = path.join(__dirname, "..", "scripts");
 const output_symbol_filename = ".symbols.json";
 const output_instructions_filename = ".instructions.json";
