@@ -20,3 +20,7 @@
   font-size: 0.85em !important;
   margin-bottom: 0.5em !important;
 }
+
+.tippy-content {
+  font-family: var(--va-font-family);
+}

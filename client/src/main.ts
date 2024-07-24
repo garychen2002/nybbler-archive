@@ -1,8 +1,8 @@
-import './assets/main.css'
+import '@/assets/main.css'
 
 // https://ui.vuestic.dev/getting-started/installation#usage-with-tailwind
+import '@/assets/vendor/vuestic-ui/typography.css'
 import 'vuestic-ui/styles/essential.css'
-import 'vuestic-ui/styles/typography.css'
 
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
