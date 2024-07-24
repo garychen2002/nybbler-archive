@@ -6,16 +6,13 @@ export type CollabProject = {
 };
 
 export type CollabBinary = {
-  analysisStatus?: "failed" | "complete";
+  analysisStatus?: CollabBinaryAnalysisStatus;
   symbolOverrides?: CollabSymbolOverrides;
   bookmarkedAddresses?: CollabBookmarkedAddresses;
-  annotations?: CollabAnnotation[];
+  annotations?: CollabAnnotations;
 };
 
+export type CollabBinaryAnalysisStatus = undefined | "failed" | "complete";
 export type CollabSymbolOverrides = Record<string, string>;
 export type CollabBookmarkedAddresses = string[];
-
-export type CollabAnnotation = {
-  address: string;
-  text: string;
-};
+export type CollabAnnotations = Record<string, Record<string, string>>;

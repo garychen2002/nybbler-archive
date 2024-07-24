@@ -7,6 +7,7 @@ import SymbolList from '@/components/SymbolList.vue'
 import UserBubble from '@/components/UserBubble.vue'
 import type { BinarySymbol } from '@/models/binary'
 import type {
+  CollabAnnotations,
   CollabBinaryAnalysisStatus,
   CollabBookmarkedAddresses,
   CollabProject,
@@ -98,6 +99,7 @@ const analysisStatus = computed(() =>
 
 const symbolOverrides = ref<CollabSymbolOverrides>({})
 const bookmarkedAddresses = ref<CollabBookmarkedAddresses>([])
+const annotations = ref<CollabAnnotations>({})
 
 const automergeDocumentHandle = computed(() =>
   project.value ? repo.find<CollabProject>(project.value.automergeDocumentId) : undefined
@@ -117,8 +119,13 @@ function updateFromAutomergeDocument(doc: Doc<CollabProject>) {
 
   if (selectedBinaryID.value) {
     analysisStatuses.value = newAnalysisStatuses
-    symbolOverrides.value = doc.binaries?.[selectedBinaryID.value]?.symbolOverrides ?? {}
-    bookmarkedAddresses.value = doc.binaries?.[selectedBinaryID.value]?.bookmarkedAddresses ?? []
+
+    const selectedBinaryData = doc.binaries?.[selectedBinaryID.value]
+    if (selectedBinaryData) {
+      symbolOverrides.value = selectedBinaryData.symbolOverrides ?? {}
+      bookmarkedAddresses.value = selectedBinaryData.bookmarkedAddresses ?? []
+      annotations.value = selectedBinaryData.annotations ?? {}
+    }
   }
 
   if (!isEqual(prevAnalysisStatuses, newAnalysisStatuses)) {
@@ -235,6 +242,22 @@ const statusColor = computed(() => {
       return 'primary'
   }
 })
+
+async function annotateLine(line: number, text: string | undefined) {
+  if (!automergeDocumentHandle.value) return
+
+  await automergeDocumentHandle.value.whenReady()
+  automergeDocumentHandle.value.change((doc) => {
+    if (selectedBinaryID.value) {
+      doc.binaries ??= {}
+      doc.binaries[selectedBinaryID.value] ??= {}
+      doc.binaries[selectedBinaryID.value].annotations ??= {}
+      doc.binaries[selectedBinaryID.value].annotations[props.functionId] ??= {}
+      doc.binaries[selectedBinaryID.value].annotations[props.functionId][line.toString()] = text
+    }
+  })
+  updateFromAutomergeDocument((await automergeDocumentHandle.value.doc())!)
+}
 </script>
 
 <template>
@@ -332,6 +355,8 @@ const statusColor = computed(() => {
                     :project="project"
                     :binary="selectedBinary"
                     :functionId="functionId"
+                    :annotations="annotations"
+                    @annotate="annotateLine"
                   />
                 </div>
               </pane>
