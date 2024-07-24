@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { fetchFunction, type Function } from '@/models/function'
 import type { Project } from '@/models/project'
+import MonacoEditor from 'monaco-editor-vue3'
 import { onMounted, ref, watch } from 'vue'
 import { VaInnerLoading } from 'vuestic-ui'
+import './syntax_highlight_langs'
 
 const props = defineProps<{
   project: Project
@@ -28,18 +30,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="flex h-full w-full content-center justify-center rounded-sm border-2 border-solid border-primary p-2 text-xs"
+  <VaInnerLoading
+    :loading="function_ === undefined"
+    class="flex-0 flex h-full w-full flex-col overflow-auto text-nowrap rounded-sm border-2 border-solid border-primary p-2 text-xs leading-relaxed"
   >
-    <VaInnerLoading :loading="function_ === undefined">
-      <textarea
-        ref="listingTextarea"
-        class="h-full w-full resize-none text-nowrap font-mono text-xs"
-        disabled
-        v-if="function_"
+    <template v-if="function_">
+      <MonacoEditor
+        language="x86asm"
+        theme="nybbler"
         :value="function_.disassembly"
-      >
-      </textarea>
-    </VaInnerLoading>
-  </div>
+        :options="{
+          minimap: { enabled: false },
+          readOnly: true,
+          domReadOnly: true
+        }"
+      />
+    </template>
+  </VaInnerLoading>
 </template>

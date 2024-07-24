@@ -20,6 +20,7 @@
     "color": "^4.2.3",
     "lodash": "^4.17.21",
     "mande": "^2.0.9",
+    "monaco-editor-vue3": "^0.1.10",
     "pinia": "^2.1.7",
     "splitpanes": "^3.1.5",
     "tippy.js": "^6.3.7",
