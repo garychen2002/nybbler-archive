@@ -36,17 +36,17 @@ const submitFile = async () => {
 
   await Promise.all(
     selectedFiles.value.map(async (file) => {
-      const toastID = toast.init({ message: `analyzing ${file.name}…`, duration: -1 })
+      const toastID = toast.init({ message: `uploading ${file.name}…`, duration: -1 })
 
       const formData = new FormData()
       formData.append('binary_file', file)
       formData.append('projectId', props.projectId)
       try {
         await apiProjectsBinaries.post(formData)
-        toast.notify({ message: `finished analyzing ${file.name}.`, color: 'success' })
+        toast.notify({ message: `${file.name} uploaded.`, color: 'success' })
       } catch (error) {
         toast.notify({
-          message: `failed to analyze ${file.name}. please try again later, or report a bug.`,
+          message: `failed to upload ${file.name}. please try again later, or report a bug.`,
           color: 'danger'
         })
         console.error(error)

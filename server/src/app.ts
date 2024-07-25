@@ -1,11 +1,13 @@
 import "dotenv/config"; // env file in server directory
 
 import bodyParser from "body-parser";
+import { Queue } from "bullmq";
 import cors from "cors";
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { sequelize } from "../datasource.js";
+import { runAnalysisResponseService } from "./analysis_response.js";
 import { runAutomergeService } from "./automerge.js";
 import { initModels } from "./models/_init.js";
 import { authRouter } from "./routers/auth_router.js";
@@ -13,7 +15,7 @@ import { binaryRouter } from "./routers/binary_router.js";
 import { functionRouter } from "./routers/function_router.js";
 import { projectRouter } from "./routers/project_router.js";
 import { userRouter } from "./routers/user_router.js";
-import { requireAuthenticated as requireAuthentication } from "./shared.js";
+import { RedisConnectionOptions, requireAuthenticated } from "./shared.js";
 
 const PORT = process.env.PORT ?? 3000;
 
@@ -30,6 +32,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+export const analysisQueue = new Queue("Analysis", {
+  connection: RedisConnectionOptions,
+});
+
 (async () => {
   try {
     await sequelize.authenticate();
@@ -38,6 +44,7 @@ app.use(cors(corsOptions));
     console.log("Connection has been established successfully.");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
+    process.exit(1);
   }
 
   app.use((req, res, next) => {
@@ -46,10 +53,10 @@ app.use(cors(corsOptions));
   });
 
   app.use("/auth", authRouter);
-  app.use("/api/projects", requireAuthentication, projectRouter);
-  app.use("/api/users", requireAuthentication, userRouter);
-  app.use("/api/binaries", requireAuthentication, binaryRouter);
-  app.use("/api/functions", requireAuthentication, functionRouter);
+  app.use("/api/projects", requireAuthenticated, projectRouter);
+  app.use("/api/users", requireAuthenticated, userRouter);
+  app.use("/api/binaries", requireAuthenticated, binaryRouter);
+  app.use("/api/functions", requireAuthenticated, functionRouter);
 
   // https://automerge.org/docs/repositories/networking/#usage-with-express
   // https://stackoverflow.com/questions/28666527/how-to-handle-http-upgrade-in-expressjs
@@ -65,6 +72,8 @@ app.use(cors(corsOptions));
     },
   );
   runAutomergeService(wss);
+
+  runAnalysisResponseService();
 
   httpServer.listen(PORT, () => {
     console.log(`HTTP server on port ${PORT}`);

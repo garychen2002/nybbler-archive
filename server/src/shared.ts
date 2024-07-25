@@ -1,3 +1,4 @@
+import { ConnectionOptions } from "bullmq";
 import { NextFunction, Request, Response } from "express";
 import { pick } from "lodash-es";
 import {
@@ -21,6 +22,11 @@ export const STATUS_FORBIDDEN = 403;
 export const STATUS_NOT_FOUND = 404;
 export const STATUS_INVALID_REQUEST = 422;
 export const STATUS_SERVER_ERROR = 500;
+
+export const RedisConnectionOptions: ConnectionOptions = {
+  host: process.env.REDIS_HOST ?? "localhost",
+  port: Number(process.env.REDIS_PORT ?? 6379),
+};
 
 export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
   const authorization = req.headers["authorization"];

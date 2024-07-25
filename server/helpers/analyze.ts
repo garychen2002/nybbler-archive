@@ -14,13 +14,9 @@ const output_dir = path.join(__dirname, "..", "projects");
 try {
   mkdirSync(output_dir);
 } catch {}
-const output_projectname = "testproject"; // use the random id of the uploaded file?
-// watch out for user defined names passing into arguments
-const input_filename = path.join("c:\\", "temp", "ascii.txt"); // pass in from uploads
 const scripts_path = path.join(__dirname, "..", "scripts");
 const output_symbol_filename = ".symbols.json";
 const output_instructions_filename = ".instructions.json";
-const output_codeunits_filename = ".codeunits.json";
 const output_decomp_filename = ".decomp.cpp";
 
 export type AnalysisResults = {
@@ -39,7 +35,6 @@ export const analyze_ghidra = async (file_to_analyze: string): Promise<AnalysisR
       "-scriptPath", scripts_path,
       "-postScript", "ExportSymbolInfoScript.java", file_to_analyze + output_symbol_filename,
       "-postScript", "InstructionDisassembler.java", file_to_analyze + output_instructions_filename,
-      "-postScript", "CodeUnitDisassembler.java", file_to_analyze + output_codeunits_filename,
       "-postScript", "DecompilerOutput.java", file_to_analyze + output_decomp_filename,
       // add more postScripts for each script here
       "-deleteProject"
@@ -67,15 +62,6 @@ export const analyze_ghidra = async (file_to_analyze: string): Promise<AnalysisR
       await readFile(file_to_analyze + output_instructions_filename, "utf-8"),
     );
     await unlink(file_to_analyze + output_instructions_filename);
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    results.codeUnits = JSON.parse(
-      await readFile(file_to_analyze + output_codeunits_filename, "utf-8"),
-    );
-    await unlink(file_to_analyze + output_codeunits_filename);
   } catch (error) {
     console.error(error);
   }
