@@ -98,7 +98,8 @@ watch(functionAnnotations, addAnnotationsToEditor)
         readOnly: true,
         domReadOnly: true,
         lineHeight: 1.75,
-        minimap: { enabled: false }
+        minimap: { enabled: false },
+        automaticLayout: true
       }"
       @editorDidMount="editorDidMount"
     />

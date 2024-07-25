@@ -20,8 +20,6 @@ import { useCollabUserState } from '@/services/collab_user_state'
 import { useMeStore } from '@/stores/me'
 import type { Doc } from '@automerge/automerge-repo'
 import { cloneDeep, indexOf, isEqual, mapValues } from 'lodash'
-import { Pane, Splitpanes } from 'splitpanes'
-import 'splitpanes/dist/splitpanes.css'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { VaIcon, VaInnerLoading } from 'vuestic-ui'
@@ -302,65 +300,65 @@ async function annotateLine(line: number, text: string | undefined) {
             status: <span :style="{ color: `var(--va-${statusColor})` }">{{ statusText }}</span>
           </div>
 
-          <VaInnerLoading v-if="selectedBinary" :loading="!analysisStatus">
-            <splitpanes v-if="selectedBinary" class="default-theme outer-splitpanes w-full py-4">
-              <pane min-size="20" size="25">
-                <div class="flex h-full flex-col gap-2 p-4">
-                  <h2 class="va-h6">symbols</h2>
+          <VaInnerLoading
+            v-if="selectedBinary"
+            :loading="!analysisStatus"
+            class="flex flex-wrap py-4 md:flex-nowrap"
+          >
+            <template v-if="selectedBinary">
+              <div class="flex w-full flex-col items-stretch gap-2 p-4 md:w-4/12">
+                <h2 class="va-h6">symbols</h2>
 
-                  <div class="flex flex-col">
-                    <div class="pb-1">
-                      <div
-                        class="h-[27vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                      >
-                        <SymbolList
-                          :projectId="project.id"
-                          :binaryId="selectedBinary.id"
-                          :symbols="bookmarkedSymbols"
-                          :selectedSymbol="selectedSymbol"
-                          :overrides="symbolOverrides ?? {}"
-                          :userStates="userStates"
-                          isBookmarkList
-                          @bookmark="toggleSymbolBookmarked"
-                          @rename="showRenameSymbol"
-                        />
-                      </div>
+                <div class="flex flex-col">
+                  <div class="pb-1">
+                    <div
+                      class="h-[27vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                    >
+                      <SymbolList
+                        :projectId="project.id"
+                        :binaryId="selectedBinary.id"
+                        :symbols="bookmarkedSymbols"
+                        :selectedSymbol="selectedSymbol"
+                        :overrides="symbolOverrides ?? {}"
+                        :userStates="userStates"
+                        isBookmarkList
+                        @bookmark="toggleSymbolBookmarked"
+                        @rename="showRenameSymbol"
+                      />
                     </div>
+                  </div>
 
-                    <div class="pt-1">
-                      <div
-                        class="h-[39.04vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                      >
-                        <SymbolList
-                          :projectId="project.id"
-                          :binaryId="selectedBinary.id"
-                          :symbols="nonBookmarkedSymbols"
-                          :selectedSymbol="selectedSymbol"
-                          :overrides="symbolOverrides ?? {}"
-                          :userStates="userStates"
-                          @bookmark="toggleSymbolBookmarked"
-                          @rename="showRenameSymbol"
-                        />
-                      </div>
+                  <div class="pt-1">
+                    <div
+                      class="h-[39.04vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
+                    >
+                      <SymbolList
+                        :projectId="project.id"
+                        :binaryId="selectedBinary.id"
+                        :symbols="nonBookmarkedSymbols"
+                        :selectedSymbol="selectedSymbol"
+                        :overrides="symbolOverrides ?? {}"
+                        :userStates="userStates"
+                        @bookmark="toggleSymbolBookmarked"
+                        @rename="showRenameSymbol"
+                      />
                     </div>
                   </div>
                 </div>
-              </pane>
+              </div>
 
-              <pane min-size="40">
-                <div class="flex h-full flex-col gap-2 p-4">
-                  <h2 class="va-h6">disassembly</h2>
+              <div class="flex w-full flex-1 flex-col gap-2 p-4 md:w-8/12">
+                <h2 class="va-h6">disassembly</h2>
 
-                  <DisassemblyListing
-                    :project="project"
-                    :binary="selectedBinary"
-                    :functionId="functionId"
-                    :annotations="annotations"
-                    @annotate="annotateLine"
-                  />
-                </div>
-              </pane>
-            </splitpanes>
+                <DisassemblyListing
+                  :project="project"
+                  :binary="selectedBinary"
+                  :functionId="functionId"
+                  :annotations="annotations"
+                  @annotate="annotateLine"
+                />
+              </div>
+            </template>
           </VaInnerLoading>
         </VaTabs>
       </div>
@@ -381,19 +379,5 @@ async function annotateLine(line: number, text: string | undefined) {
 <style scoped>
 .project-view-main-tabs :deep(.va-tabs__content) {
   width: 100%;
-}
-
-:deep(.splitpanes--vertical > .splitpanes__splitter) {
-  min-width: 12px !important;
-  background: var(--va-background-element) !important;
-}
-
-:deep(.splitpanes--horizontal > .splitpanes__splitter) {
-  min-height: 12px !important;
-  background: var(--va-background-element) !important;
-}
-
-.outer-splitpanes {
-  height: calc(100vh - 130px);
 }
 </style>

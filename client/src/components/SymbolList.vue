@@ -62,9 +62,11 @@ const sortedSymbols = computed(() =>
           'selected-symbol': symbol.address === selectedSymbol?.address
         }"
       >
-        <div class="font-mono">
+        <div class="overflow-hidden text-ellipsis text-nowrap font-mono">
           {{ overrides[symbol.address] ?? symbol.name }}
+        </div>
 
+        <div>
           <UserBubble
             v-for="userState in userStates.filter(
               (state) => state.functionID === symbol.functionId
