@@ -1,0 +1,15 @@
+FROM node:20
+ARG CLIENT_ID
+ARG CLIENT_SECRET
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . ./
+RUN npm run build
+EXPOSE 3000
+WORKDIR /usr/src/app/dist
+
+ENV CLIENT_ID=${CLIENT_ID}
+ENV CLIENT_SECRET=${CLIENT_SECRET}
+ENV REDIRECT_URI=https://nybbler.me/auth/callback
+CMD [ "node", "src/app.js" ]

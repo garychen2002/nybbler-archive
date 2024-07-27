@@ -45,7 +45,20 @@ services:
       - LETSENCRYPT_HOST=api.nybbler.me
       - CORS_ORIGIN=https://nybbler.me
       - POSTGRES_URL=postgres://nybbler:nybbler@nybbler-postgres:5432/nybbler
-      - VIRTUAL_MAX_UPLOAD=8m
+      - REDIS_HOST=nybbler-redis
+      - REDIS_PORT=6379
+    volumes:
+      - uploads-volume:/usr/src/app/dist/uploads
+  workers:
+    image: ghcr.io/utsc-cscc09-programming-on-the-web/nybbler-workers
+    container_name: nybbler-workers
+    restart: always
+    environment:
+      - POSTGRES_URL=postgres://nybbler:nybbler@nybbler-postgres:5432/nybbler
+      - REDIS_HOST=nybbler-redis
+      - REDIS_PORT=6379
+    volumes:
+      - uploads-volume:/usr/src/app/dist/uploads
   redis:
     image: redis:7.2.5-alpine
     container_name: nybbler-redis
@@ -67,4 +80,5 @@ services:
       - ./postgres16/:/docker-entrypoint-initdb.d/
 
 volumes:
+  uploads-volume:
   postgres-volume:
