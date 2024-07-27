@@ -34,5 +34,5 @@ export class Binary extends Model<Binary> {
   symbols!: Symbol[];
 
   @Column
-  declare md5hash: string;
+  declare virustotalID: string;
 }

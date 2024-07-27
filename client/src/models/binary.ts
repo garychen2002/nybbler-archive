@@ -2,7 +2,7 @@ export type Binary = {
   id: number
   name: string
   symbols: BinarySymbol[]
-  md5hash: string
+  virustotalID: string
 }
 
 export type BinarySymbol = {

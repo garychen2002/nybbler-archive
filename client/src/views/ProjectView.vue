@@ -54,7 +54,7 @@ const selectedSymbol = computed(() =>
 )
 
 const VirusTotalLink = computed(
-  () => 'https://www.virustotal.com/gui/file/' + selectedBinary.value?.md5hash
+  () => 'https://www.virustotal.com/gui/file/' + selectedBinary.value?.virustotalID
 )
 
 const router = useRouter()
@@ -276,7 +276,7 @@ const statusColor = computed(() => {
               </template>
             </VaTab>
           </template>
-          <template v-if="selectedBinary?.md5hash">
+          <template v-if="selectedBinary?.virustotalID">
             <a :href="`${VirusTotalLink}`" target="_blank" rel="noreferrer">
               <VaButton preset="primary" class="ms-auto" title="VirusTotal analysis">
                 VirusTotal Analysis

@@ -9,7 +9,7 @@ import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
 import { Symbol } from "../models/symbol.js";
 import { User } from "../models/user.js";
-import { getChecksum } from "../../helpers/checksum.js"
+import { virustotal_upload } from "../../helpers/virustotal_upload.js";
 import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
@@ -243,6 +243,15 @@ projectRouter.post(
       file,
       projectId: req.body.projectId,
     } as CreationAttributes<Binary>);
+
+    if (req.body.virustotal === "true") {
+      const virustotal_response = await virustotal_upload(file);
+      if (virustotal_response?.data?.id)
+      {
+        binary.set("virustotalID", virustotal_response.data.id);
+        binary.save();
+      }
+    }
 
     await analysisQueue.add("Analyze", {
       binaryId: binary.id,
