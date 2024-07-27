@@ -113,6 +113,7 @@ async function readJSON(file: string) {
  *
  * The following are retained from the existing project:
  * - project ID
+ * - project name
  * - invited users
  * - automerge document ID
  */
@@ -128,8 +129,6 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
       await Promise.all(
         (await replaceProjectRecord.$get("binaries")).map((binaryRecord) => binaryRecord.destroy()),
       );
-      replaceProjectRecord.name = project.name;
-      await replaceProjectRecord.save();
 
       const docHandle = repo.find<CollabProject>(replaceProjectRecord.automergeDocumentId);
       await docHandle.whenReady();
