@@ -10,6 +10,7 @@ import { Project } from "../models/project.js";
 import { Symbol } from "../models/symbol.js";
 import { User } from "../models/user.js";
 import { virustotal_upload } from "../../helpers/virustotal_upload.js";
+import { getChecksum } from "../../helpers/checksum.js";
 import {
   STATUS_CREATED,
   STATUS_INVALID_REQUEST,
@@ -248,7 +249,8 @@ projectRouter.post(
       const virustotal_response = await virustotal_upload(file);
       if (virustotal_response?.data?.id)
       {
-        binary.set("virustotalID", virustotal_response.data.id);
+        const md5hash = await getChecksum(file.path);
+        binary.set("virustotalID", md5hash); // can't link the URL from just the analysis ID
         binary.save();
       }
     }
