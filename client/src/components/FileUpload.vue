@@ -1,22 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { VaButton, VaFileUpload, useToast } from 'vuestic-ui'
-import { apiProjectsBinaries } from '../services/api'
+import { computed, ref, watchEffect } from 'vue'
+import { VaButton, VaFileUpload } from 'vuestic-ui'
 
-interface Props {
-  projectId: string
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  complete: []
+const props = defineProps<{
+  modalTitle: string
+  fileTypes: string
+  multiple?: boolean
 }>()
 
-const selectedFiles = ref<File[]>([])
-const showUploadModal = ref(false)
+const show = defineModel<boolean>('show', { required: true })
 
-const toast = useToast()
+const emit = defineEmits<{
+  upload: [selectedFiles: File[]]
+}>()
+
+const selectedFiles_ = ref<File[]>([])
+const selectedFiles = computed({
+  get() {
+    return selectedFiles_.value
+  },
+  set(newValue: File[]) {
+    selectedFiles_.value = props.multiple ? newValue : newValue.slice(0, 1)
+  }
+})
+
+watchEffect(() => {
+  if (!show.value) {
+    selectedFiles.value = []
+  }
+})
 
 const FILE_SIZE_LIMIT = 32 * 1024 * 1024 // 32 mib in bytes
 // defined server side in docker compose
@@ -32,45 +44,20 @@ const submitFile = async () => {
     return
   }
 
-  showUploadModal.value = false
-
-  await Promise.all(
-    selectedFiles.value.map(async (file) => {
-      const toastID = toast.init({ message: `uploading ${file.name}…`, duration: -1 })
-
-      const formData = new FormData()
-      formData.append('binary_file', file)
-      formData.append('projectId', props.projectId)
-      try {
-        await apiProjectsBinaries.post(formData)
-        toast.notify({ message: `${file.name} uploaded.`, color: 'success' })
-      } catch (error) {
-        toast.notify({
-          message: `failed to upload ${file.name}. please try again later, or report a bug.`,
-          color: 'danger'
-        })
-        console.error(error)
-      } finally {
-        toast.close(toastID!)
-        emit('complete')
-      }
-    })
-  )
-
+  emit('upload', selectedFiles.value)
+  show.value = false
   selectedFiles.value = []
 }
 </script>
 
 <template>
-  <VaButton v-bind="$attrs" @click="() => (showUploadModal = true)">
-    upload binaries
-    <VaIcon name="upload" class="ms-2" />
-  </VaButton>
+  <slot name="button"></slot>
 
-  <VaModal v-model="showUploadModal" hide-default-actions>
-    <h3 class="va-h6 mb-4">upload binaries</h3>
+  <VaModal v-model="show" hide-default-actions>
+    <h3 class="va-h6 mb-4">{{ modalTitle }}</h3>
     <VaFileUpload
       v-model="selectedFiles"
+      :file-types="fileTypes"
       dropzone
       drop-zone-text="drop here, or"
       upload-button-text="choose"
@@ -78,9 +65,7 @@ const submitFile = async () => {
     />
 
     <template #footer>
-      <VaButton class="me-3" preset="secondary" @click="() => (showUploadModal = false)">
-        cancel
-      </VaButton>
+      <VaButton class="me-3" preset="secondary" @click="() => (show = false)"> cancel </VaButton>
       <VaButton color="primary" @click="submitFile"> upload </VaButton>
     </template>
   </VaModal>

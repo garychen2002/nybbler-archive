@@ -26,11 +26,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(express.static("static"));
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
-  credentials: true,
-};
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    credentials: true,
+    exposedHeaders: ["Content-Disposition"],
+  }),
+);
 
 export const analysisQueue = new Queue("Analysis", {
   connection: RedisConnectionOptions,
