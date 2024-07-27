@@ -1,5 +1,5 @@
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "fs/promises";
-import { pick } from "lodash-es";
+import { chain, cloneDeep, pick } from "lodash-es";
 import { tmpdir } from "os";
 import { join } from "path";
 import { CreationAttributes, Transaction } from "sequelize";
@@ -60,9 +60,11 @@ export async function exportProject(projectRecord: Project): Promise<string> {
       await mkdir(binaryDir);
 
       const symbolRecords: Symbol[] = await binaryRecord.$get("symbols", { order: ["address"] });
-      const symbols: ExportedSymbol[] = symbolRecords.map((symbolRecord) =>
-        pick(symbolRecord, ["name", "address", "functionId"]),
-      );
+      const symbols: ExportedSymbol[] = symbolRecords.map((symbolRecord) => ({
+        name: symbolRecord.name,
+        address: symbolRecord.address,
+        functionId: functionIDs.generate(symbolRecord.functionId),
+      }));
 
       const binary: ExportedBinary = {
         name: binaryRecord.name,
@@ -92,7 +94,17 @@ export async function exportProject(projectRecord: Project): Promise<string> {
   );
 
   const docHandle = repo.find<CollabProject>(projectRecord.automergeDocumentId);
-  const collab = await docHandle.doc();
+  const doc: CollabProject = cloneDeep((await docHandle.doc()) ?? {});
+
+  const collab: CollabProject = {
+    ...doc,
+    binaries: chain(doc.binaries ?? {})
+      // Discard binaries currently being analyzed
+      .pickBy((binary) => !!binary.analysisStatus)
+      // Remap IDs
+      .mapKeys((_, binaryID) => binaryIDs.generate(Number(binaryID)))
+      .value(),
+  };
 
   const project: ExportedProject = {
     name: projectRecord.name,
@@ -124,17 +136,9 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
       const binaryRecordIDs = new Map<string, number>();
       const functionRecordIDs = new Map<string, number>();
 
-      const project: ExportedProject = await readJSON(join(projectDir, "project.nybbler.json"));
-
       await Promise.all(
         (await replaceProjectRecord.$get("binaries")).map((binaryRecord) => binaryRecord.destroy()),
       );
-
-      const docHandle = repo.find<CollabProject>(replaceProjectRecord.automergeDocumentId);
-      await docHandle.whenReady();
-      docHandle.change((doc) => {
-        Object.assign(doc, project.collab ?? {});
-      });
 
       const binariesDir = join(projectDir, "binaries");
       const binaryIDs = await readdir(binariesDir);
@@ -179,6 +183,23 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
           );
         }),
       );
+
+      const { collab }: ExportedProject = await readJSON(join(projectDir, "project.nybbler.json"));
+
+      const docHandle = repo.find<CollabProject>(replaceProjectRecord.automergeDocumentId);
+      await docHandle.whenReady();
+      docHandle.change((doc) => {
+        const importedCollabBinaries = collab?.binaries ?? {};
+        doc.binaries ??= {};
+
+        for (const binaryID in importedCollabBinaries) {
+          const value = importedCollabBinaries[Number(binaryID)];
+          delete doc.binaries[Number(binaryID)];
+
+          const newID = binaryRecordIDs.get(binaryID);
+          if (newID) doc.binaries[newID] = value;
+        }
+      });
     },
   );
 }
