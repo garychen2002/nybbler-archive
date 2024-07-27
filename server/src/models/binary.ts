@@ -18,7 +18,7 @@ export class Binary extends Model<Binary> {
 
   /** Uploaded file information. */
   @Column(DataType.JSON)
-  declare file: Express.Multer.File;
+  declare file?: Express.Multer.File;
 
   /** Owning project. */
   @BelongsTo(() => Project, { onDelete: "cascade" })
