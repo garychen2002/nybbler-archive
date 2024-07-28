@@ -1,9 +1,15 @@
+import archiver from "archiver";
 import { Router } from "express";
+import extract from "extract-zip";
+import { mkdtemp, rm } from "fs/promises";
 import multer from "multer";
+import { tmpdir } from "os";
+import { join } from "path";
 import { CreationAttributes, Op, Transaction } from "sequelize";
 import { sequelize } from "../../datasource.js";
 import { analysisQueue } from "../app.js";
 import { repo } from "../automerge.js";
+import { exportProject, importProject } from "../import_export.js";
 import { Binary } from "../models/binary.js";
 import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
@@ -259,6 +265,65 @@ projectRouter.post(
       binaryId: binary.id,
     });
 
+    res.status(STATUS_NO_CONTENT).send();
+  }),
+);
+
+// Export to zip file
+projectRouter.get(
+  "/:projectId/exported",
+  catchErrors(async (req, res) => {
+    const projectId = Number(req.params.projectId);
+
+    const project = await Project.findByPk(projectId, {
+      rejectOnEmpty: true,
+    });
+    const exportDir = await exportProject(project);
+
+    res.contentType("application/zip").attachment(`${project.name}.nybbler.zip`);
+
+    const archive = archiver.create("zip");
+    archive.pipe(res);
+
+    archive.directory(exportDir, false);
+    archive.on("end", async () => {
+      await rm(exportDir, { recursive: true });
+    });
+
+    archive.finalize();
+  }),
+);
+
+// Import from zip file
+projectRouter.put(
+  "/:projectId/exported",
+  upload.single("file"),
+  catchErrors(async (req, res) => {
+    const { file } = req;
+    if (!file) {
+      return res.status(STATUS_INVALID_REQUEST).json({
+        error: "Invalid input parameters. Expected file",
+      });
+    }
+
+    const projectId = Number(req.params.projectId);
+    const project = await Project.findByPk(projectId, {
+      rejectOnEmpty: true,
+    });
+
+    const projectDir = await mkdtemp(join(tmpdir(), "nybbler-import-"));
+    await extract(file.path, { dir: projectDir });
+
+    try {
+      await importProject(projectDir, project);
+    } catch (error) {
+      console.error("Project import failed:", error);
+      return res.status(STATUS_INVALID_REQUEST).json({
+        error: "Import failed. Please check your project file for validity.",
+      });
+    }
+
+    await rm(projectDir, { recursive: true });
     res.status(STATUS_NO_CONTENT).send();
   }),
 );
