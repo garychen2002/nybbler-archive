@@ -2,6 +2,7 @@
 import BinaryUpload from '@/components/BinaryUpload.vue'
 import DisassemblyListing from '@/components/DisassemblyListing.vue'
 import ExportButton from '@/components/ExportButton.vue'
+import GithubSync from '@/components/GithubSync.vue'
 import ImportUpload from '@/components/ImportUpload.vue'
 import PageContent from '@/components/PageContent.vue'
 import RenameSymbolModal from '@/components/RenameSymbolModal.vue'
@@ -257,6 +258,9 @@ const statusColor = computed(() => {
             <ImportUpload :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
             <BinaryUpload :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
           </div>
+        </div>
+        <div class="ms-auto flex">
+            <GithubSync :projectId="props.projectId" @complete="fetchProject"/>
         </div>
 
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">

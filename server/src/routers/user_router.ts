@@ -41,7 +41,7 @@ userRouter.get(
 userRouter.get(
   "/branches",
   catchErrors(async (req, res) => {
-    const {owner, repo} = req.body;
+    const {owner, repo} = req.params;
     const token = getBearerToken(req);
     const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/branches`, {
       headers: { Authorization: `Bearer ${token}` }
