@@ -23,7 +23,12 @@ import {
   getAuthenticatedUser,
   paginate,
   sendPaginatePage,
+  getBearerToken,
 } from "../shared.js";
+import {
+  loadProjectFromGitHub,
+  syncProjectToGitHub
+ } from "../import_export.js";
 
 const upload = multer({ dest: "uploads/" });
 
@@ -315,3 +320,49 @@ projectRouter.put(
     res.status(STATUS_NO_CONTENT).send();
   }),
 );
+
+projectRouter.post('/:id/sync-to-github', async (req, res) => {
+  const { id } = req.params;
+  const { owner, repo, branch } = req.body;
+
+  const token = getBearerToken(req);
+  if (!token) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const projectRecord = await Project.findByPk(id);
+  if (!projectRecord) {
+    return res.status(404).send('Project not found');
+  } 
+
+  try {
+    await syncProjectToGitHub(token, projectRecord, owner, repo, branch);
+    res.status(200).send('Project synced to GitHub successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to sync project to GitHub');
+  }
+});
+
+projectRouter.post('/:id/load-from-github', async (req, res) => {
+  const { id } = req.params;
+  const { owner, repo, branch, filePath } = req.body;
+
+  const token = getBearerToken(req);
+  if (!token) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const projectRecord = await Project.findByPk(id);
+  if (!projectRecord) {
+    return res.status(404).send('Project not found');
+  }
+
+  try {
+    await loadProjectFromGitHub(token, owner, repo, branch, filePath, projectRecord);
+    res.status(200).send('Project loaded from GitHub successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Failed to load project from GitHub');
+  }
+});

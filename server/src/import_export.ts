@@ -10,6 +10,7 @@ import { Binary } from "./models/binary.js";
 import { Function } from "./models/function.js";
 import { Project } from "./models/project.js";
 import { Symbol } from "./models/symbol.js";
+import { uploadFileToGitHub, downloadFileFromGitHub } from "./github_api.js";
 
 export type ExportedProject = {
   name: string;
@@ -202,4 +203,20 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
       });
     },
   );
+}
+
+export async function syncProjectToGitHub(token: string, projectRecord: Project, owner: string, repo: string, branch: string) {
+  const projectDir = await exportProject(projectRecord);
+
+  const zipFileContent = await readFile(projectDir);
+  await uploadFileToGitHub(token, owner, repo, branch, `${projectRecord.name}.zip`, zipFileContent);
+}
+
+export async function loadProjectFromGitHub(token: string, owner: string, repo: string, branch: string, filePath: string, replaceProjectRecord: Project) {
+  const zipFileContent = await downloadFileFromGitHub(token, owner, repo, branch, filePath);
+
+  const zipFilePath = join(tmpdir(), `${replaceProjectRecord.name}.zip`);
+  await writeFile(zipFilePath, zipFileContent);
+
+  await importProject(zipFilePath, replaceProjectRecord);
 }

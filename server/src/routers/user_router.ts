@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { User } from "../models/user.js";
-import { catchErrors, getAuthenticatedUser } from "../shared.js";
+import { catchErrors, getAuthenticatedUser, getBearerToken } from "../shared.js";
+import axios from "axios";
 
 export const userRouter = Router();
 
@@ -24,3 +25,28 @@ userRouter.get(
     res.json((await getAuthenticatedUser(req))!);
   }),
 );
+
+userRouter.get(
+  "/repos",
+  catchErrors(async (req, res) => {
+    const token = getBearerToken(req);
+    const response = await axios.get('https://api.github.com/user/repos', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    res.json(response.data);
+  }),
+);
+
+userRouter.get(
+  "/branches",
+  catchErrors(async (req, res) => {
+    const {owner, repo} = req.body;
+    const token = getBearerToken(req);
+    const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/branches`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    res.json(response.data);
+  }),
+)
