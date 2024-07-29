@@ -103,7 +103,6 @@ projectRouter.get(
       });
     }
 
-
     res.json(project);
   }),
 );
@@ -113,17 +112,16 @@ projectRouter.patch(
   catchErrors(async (req, res) => {
     const user = await getAuthenticatedUser(req);
     const projectId = Number(req.params.projectId);
-    const project = await Project.findByPk(projectId, 
-      {
-        include: [
-          {
-            model: User,
-            as: "invitees",
-            through: { attributes: [] },
-          },
-        ],
-        rejectOnEmpty: true,
-      });
+    const project = await Project.findByPk(projectId, {
+      include: [
+        {
+          model: User,
+          as: "invitees",
+          through: { attributes: [] },
+        },
+      ],
+      rejectOnEmpty: true,
+    });
     const projectInvites = await Invite.findOne({
       where: {
         projectId: projectId,
@@ -248,7 +246,6 @@ projectRouter.post(
       });
     }
 
-
     const invitees = await User.findAll({
       where: {
         id: { [Op.in]: userIds },
@@ -274,7 +271,7 @@ projectRouter.delete(
         userId: user?.id,
       },
     });
-    
+
     if (!projectInvites) {
       return res.status(STATUS_FORBIDDEN).json({
         error: "unauthorized",
@@ -312,7 +309,7 @@ projectRouter.post(
         userId: user?.id,
       },
     });
-    
+
     if (!projectInvites) {
       return res.status(STATUS_FORBIDDEN).json({
         error: "unauthorized",
@@ -348,7 +345,7 @@ projectRouter.get(
         userId: user?.id,
       },
     });
-    
+
     if (!projectInvites) {
       return res.status(STATUS_FORBIDDEN).json({
         error: "unauthorized",
@@ -394,7 +391,7 @@ projectRouter.put(
         userId: user?.id,
       },
     });
-    
+
     if (!projectInvites) {
       return res.status(STATUS_FORBIDDEN).json({
         error: "unauthorized",

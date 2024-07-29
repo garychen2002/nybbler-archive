@@ -12,10 +12,9 @@ functionRouter.get(
     const funct = await Function.findOne({
       where: {
         id: req.params.functionId,
-      }
-    })
-    if (funct?.symbol?.binary?.project)
-    {
+      },
+    });
+    if (funct?.symbol?.binary?.project) {
       const projectInvites = await Invite.findOne({
         where: {
           projectId: funct?.symbol?.binary?.projectId,
