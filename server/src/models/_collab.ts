@@ -15,4 +15,9 @@ export type CollabBinary = {
 export type CollabBinaryAnalysisStatus = undefined | "failed" | "complete";
 export type CollabSymbolOverrides = Record<string, string>;
 export type CollabBookmarkedAddresses = string[];
-export type CollabAnnotations = Record<string, Record<string, string>>;
+export type CollabAnnotations = Record<string, Record<string, CollabAnnotation>>;
+
+export type CollabAnnotation = {
+  userIds: number[];
+  text: string;
+};

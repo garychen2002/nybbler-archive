@@ -19,7 +19,7 @@ import { repo } from '@/services/automerge'
 import { useCollabUserState } from '@/services/collab_user_state'
 import { useMeStore } from '@/stores/me'
 import type { Doc } from '@automerge/automerge-repo'
-import { cloneDeep, indexOf, isEqual, mapValues } from 'lodash'
+import { cloneDeep, indexOf, isEqual, mapValues, uniq } from 'lodash'
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { VaIcon, VaInnerLoading } from 'vuestic-ui'
@@ -78,7 +78,7 @@ watch(
 watch(selectedBinaryID, (newValue) => {
   router.push({
     name: 'project-binary',
-    params: { projectId: project.value.id, binaryId: `${newValue}` }
+    params: { projectId: project.value!.id, binaryId: `${newValue}` }
   })
 })
 
@@ -250,8 +250,19 @@ async function annotateLine(line: number, text: string | undefined) {
       doc.binaries ??= {}
       doc.binaries[selectedBinaryID.value] ??= {}
       doc.binaries[selectedBinaryID.value].annotations ??= {}
-      doc.binaries[selectedBinaryID.value].annotations[props.functionId] ??= {}
-      doc.binaries[selectedBinaryID.value].annotations[props.functionId][line.toString()] = text
+      doc.binaries[selectedBinaryID.value].annotations![props.functionId!] ??= {}
+
+      if (text) {
+        const prevUserIds =
+          doc.binaries[selectedBinaryID.value].annotations![props.functionId!][line.toString()]
+            ?.userIds ?? []
+        doc.binaries[selectedBinaryID.value].annotations![props.functionId!][line.toString()] = {
+          userIds: uniq([...prevUserIds, meStore.user!.id]),
+          text
+        }
+      } else {
+        delete doc.binaries[selectedBinaryID.value].annotations![props.functionId!][line.toString()]
+      }
     }
   })
   updateFromAutomergeDocument((await automergeDocumentHandle.value.doc())!)
@@ -352,7 +363,6 @@ async function annotateLine(line: number, text: string | undefined) {
 
                 <DisassemblyListing
                   :project="project"
-                  :binary="selectedBinary"
                   :functionId="functionId"
                   :annotations="annotations"
                   @annotate="annotateLine"
