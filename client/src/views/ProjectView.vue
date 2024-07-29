@@ -316,16 +316,18 @@ async function annotateLine(line: number, text: string | undefined) {
               </template>
             </VaTab>
           </template>
-          <template v-if="selectedBinary?.virustotalID">
-            <a :href="`${VirusTotalLink}`" target="_blank" rel="noreferrer">
-              <VaButton preset="primary" class="ms-auto" title="VirusTotal analysis">
-                VirusTotal Analysis
-                <VaIcon name="launch" />
-              </VaButton>
-            </a>
-          </template>
-          <div class="ms-4 mt-4 text-sm font-semibold" v-if="selectedBinary">
-            status: <span :style="{ color: `var(--va-${statusColor})` }">{{ statusText }}</span>
+          <div class="ms-4 mt-4 flex items-center text-sm font-semibold" v-if="selectedBinary">
+            <div class="pb-1">
+              status: <span :style="{ color: `var(--va-${statusColor})` }">{{ statusText }}</span>
+            </div>
+            <template v-if="selectedBinary?.virustotalID">
+              <a :href="`${VirusTotalLink}`" target="_blank" rel="noreferrer" class="ms-4 pb-1">
+                <VaButton preset="primary" size="small">
+                  VirusTotal analysis
+                  <VaIcon name="launch" />
+                </VaButton>
+              </a>
+            </template>
           </div>
 
           <VaInnerLoading
