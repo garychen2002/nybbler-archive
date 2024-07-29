@@ -2,8 +2,8 @@
 
 …is the name of our project and our team.
 
-Deployed URL: https://nybbler.me/    
-Video Demo: 
+Deployed URL: https://nybbler.me/  
+Video Demo: https://youtu.be/hm5J9mIjFY8
 
 ## Team
 
