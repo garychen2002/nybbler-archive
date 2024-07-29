@@ -7,6 +7,8 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { CreationAttributes, Op, Transaction } from "sequelize";
 import { sequelize } from "../../datasource.js";
+import { getChecksum } from "../../helpers/checksum.js";
+import { virustotal_upload } from "../../helpers/virustotal_upload.js";
 import { analysisQueue } from "../app.js";
 import { repo } from "../automerge.js";
 import { exportProject, importProject } from "../import_export.js";
@@ -15,8 +17,6 @@ import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
 import { Symbol } from "../models/symbol.js";
 import { User } from "../models/user.js";
-import { virustotal_upload } from "../../helpers/virustotal_upload.js";
-import { getChecksum } from "../../helpers/checksum.js";
 import {
   STATUS_CREATED,
   STATUS_FORBIDDEN,
@@ -248,13 +248,20 @@ projectRouter.post(
       });
     }
 
+    const project = await Project.findOne({
+      where: {
+        id: projectId,
+      },
+      rejectOnEmpty: true,
+    });
+
     const invitees = await User.findAll({
       where: {
         id: { [Op.in]: userIds },
       },
     });
 
-    await Promise.all(invitees.map((invitee) => proj.$add("invitees", invitee)));
+    await Promise.all(invitees.map((invitee) => project.$add("invitees", invitee)));
 
     res.status(STATUS_CREATED).send();
   }),
@@ -280,6 +287,13 @@ projectRouter.delete(
       });
     }
 
+    const project = await Project.findOne({
+      where: {
+        id: projectId,
+      },
+      rejectOnEmpty: true,
+    });
+
     const invitee = await User.findOne({
       where: {
         id: userId,
@@ -287,7 +301,7 @@ projectRouter.delete(
       rejectOnEmpty: true,
     });
 
-    await proj.$remove("invitees", invitee);
+    await project.$remove("invitees", invitee);
     res.json(invitee);
   }),
 );
@@ -326,8 +340,7 @@ projectRouter.post(
 
     if (req.body.virustotal === "true") {
       const virustotal_response = await virustotal_upload(file);
-      if (virustotal_response?.data?.id)
-      {
+      if (virustotal_response?.data?.id) {
         const md5hash = await getChecksum(file.path);
         binary.set("virustotalID", md5hash); // can't link the URL from just the analysis ID
         binary.save();
