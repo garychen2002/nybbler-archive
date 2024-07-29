@@ -6,6 +6,7 @@ import * as monaco from 'monaco-editor'
 import MonacoEditor from 'monaco-editor-vue3'
 import { computed, onMounted, ref, watch } from 'vue'
 import { VaInnerLoading } from 'vuestic-ui'
+import AddInlineCommentModal from './AddInlineCommentModal.vue'
 import './syntax_highlight_langs'
 
 const props = defineProps<{
@@ -70,8 +71,8 @@ function editorDidMount(editor_: monaco.editor.IStandaloneCodeEditor) {
     const lineNumber = event.target.position?.lineNumber
     if (!lineNumber) return
 
-    const comment = prompt('Comment on line ' + lineNumber + ':')
-    emit('annotate', lineNumber, comment ?? undefined)
+    addInlineCommentLineNumber.value = lineNumber
+    showAddInlineCommentModal.value = true
   })
 
   editor.onDidDispose(() => {
@@ -82,6 +83,13 @@ function editorDidMount(editor_: monaco.editor.IStandaloneCodeEditor) {
 }
 
 watch(functionAnnotations, addAnnotationsToEditor)
+
+const addInlineCommentLineNumber = ref<number>()
+const showAddInlineCommentModal = ref(false)
+
+function submitAddInlineComment(text: string) {
+  emit('annotate', addInlineCommentLineNumber.value!, text ?? undefined)
+}
 </script>
 
 <template>
@@ -104,6 +112,11 @@ watch(functionAnnotations, addAnnotationsToEditor)
       @editorDidMount="editorDidMount"
     />
   </VaInnerLoading>
+
+  <AddInlineCommentModal
+    v-model:show="showAddInlineCommentModal"
+    @submit="submitAddInlineComment"
+  />
 </template>
 
 <style scoped>
@@ -116,11 +129,12 @@ watch(functionAnnotations, addAnnotationsToEditor)
 }
 
 :deep(.inline-comment) {
-  background: lightgray;
   margin-left: 1em;
   padding: 0.5em;
   padding-left: 0.75em;
-  border: 0.25em;
+
+  background: #fff;
+  border: 2px solid #000;
   border-radius: 0.5em;
 }
 </style>
