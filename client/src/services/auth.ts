@@ -15,7 +15,9 @@ export function restoreSession() {
  * @param code OAuth2 authorization code
  */
 export async function signIn(code: string) {
-  const { token } = await auth.get<{ token: string }>('/callback', { query: { code } })
+  const { token } = await auth.get<{ token: string; access: string }>('/callback', {
+    query: { code }
+  })
   apiSetToken(token)
   localStorage.setItem('session_token', token)
 }

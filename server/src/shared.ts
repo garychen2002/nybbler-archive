@@ -28,14 +28,23 @@ export const RedisConnectionOptions: ConnectionOptions = {
   port: Number(process.env.REDIS_PORT ?? 6379),
 };
 
-export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
+export async function getCurrentSession(req: Request): Promise<Session | undefined> {
   const authorization = req.headers["authorization"];
   if (!authorization) return;
 
   const token = authorization.match(/Bearer\s*(.+)/i)?.[1];
   if (!token) return;
 
-  const session = await Session.findOne({ where: { token } });
+  return (await Session.findOne({ where: { token } })) ?? undefined;
+}
+
+export async function getGithubAccessToken(req: Request): Promise<string | undefined> {
+  const session = await getCurrentSession(req);
+  return session?.oauthAccessToken;
+}
+
+export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
+  const session = await getCurrentSession(req);
   if (!session) return;
 
   // For some reason, the `user` association wasn't working. But this will.

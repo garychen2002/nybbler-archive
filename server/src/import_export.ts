@@ -1,10 +1,14 @@
+import archiver from "archiver";
+import extract from "extract-zip";
+import { createWriteStream } from "fs";
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "fs/promises";
 import { chain, cloneDeep, pick } from "lodash-es";
 import { tmpdir } from "os";
-import { join } from "path";
+import path, { join } from "path";
 import { CreationAttributes, Transaction } from "sequelize";
 import { sequelize } from "../datasource.js";
 import { repo } from "./automerge.js";
+import { downloadFileFromGitHub, uploadFileToGitHub } from "./github_api.js";
 import { CollabProject } from "./models/_collab.js";
 import { Binary } from "./models/binary.js";
 import { Function } from "./models/function.js";
@@ -159,13 +163,19 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
             functionIDs.map(async (functionID) => {
               const functionDir = join(functionsDir, functionID);
 
-              const function_: ExportedFunction = await readJSON(
-                join(functionDir, "function.nybbler.json"),
-              );
-              const functionRecord = await Function.create({
-                disassembly: function_.disassembly,
-              } as CreationAttributes<Function>);
-              functionRecordIDs.set(functionID, functionRecord.id!);
+              try {
+                const function_: ExportedFunction = await readJSON(
+                  join(functionDir, "function.nybbler.json"),
+                );
+
+                const functionRecord = await Function.create({
+                  disassembly: function_.disassembly,
+                } as CreationAttributes<Function>);
+                functionRecordIDs.set(functionID, functionRecord.id!);
+              } catch (error) {
+                console.error(error);
+                return;
+              }
             }),
           );
 
@@ -202,4 +212,66 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
       });
     },
   );
+}
+
+// Helper to get exported zip and pass to uploader function
+export async function syncProjectToGitHub(
+  token: string,
+  projectRecord: Project,
+  owner: string,
+  repo: string,
+  filePath: string,
+) {
+  const projectDir = await exportProject(projectRecord);
+
+  const zipFilePath = path.join(tmpdir(), filePath);
+  await zipDirectory(projectDir, zipFilePath);
+
+  const zipFileContent = await readFile(zipFilePath);
+  await uploadFileToGitHub(token, owner, repo, filePath, zipFileContent);
+}
+
+// Helper to get downloaded zip, extract and pass to import function
+export async function loadProjectFromGitHub(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string,
+  filePath: string,
+  replaceProjectRecord: Project,
+) {
+  const zipFileContent = await downloadFileFromGitHub(token, owner, repo, branch, filePath);
+
+  const zipFilePath = join(tmpdir(), filePath);
+
+  await writeFile(zipFilePath, zipFileContent);
+  const extract = await unzipFile(zipFilePath);
+
+  await importProject(extract, replaceProjectRecord);
+}
+
+// Zip file extract
+async function unzipFile(zipFilePath: string): Promise<string> {
+  const extractDir = await mkdtemp(join(tmpdir(), "nybbler-unzip-"));
+
+  await extract(zipFilePath, { dir: extractDir });
+
+  return extractDir;
+}
+
+// Zip helper
+async function zipDirectory(sourceDir: string, outPath: string): Promise<void> {
+  //GPT
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  const stream = createWriteStream(outPath);
+
+  return new Promise((resolve, reject) => {
+    archive
+      .directory(sourceDir, false)
+      .on("error", (err) => reject(err))
+      .pipe(stream);
+
+    stream.on("close", () => resolve());
+    archive.finalize();
+  });
 }

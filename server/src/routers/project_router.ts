@@ -11,7 +11,12 @@ import { getChecksum } from "../../helpers/checksum.js";
 import { virustotal_upload } from "../../helpers/virustotal_upload.js";
 import { analysisQueue } from "../app.js";
 import { repo } from "../automerge.js";
-import { exportProject, importProject } from "../import_export.js";
+import {
+  exportProject,
+  importProject,
+  loadProjectFromGitHub,
+  syncProjectToGitHub,
+} from "../import_export.js";
 import { Binary } from "../models/binary.js";
 import { Invite } from "../models/invite.js";
 import { Project } from "../models/project.js";
@@ -24,6 +29,7 @@ import {
   STATUS_NO_CONTENT,
   catchErrors,
   getAuthenticatedUser,
+  getGithubAccessToken,
   paginate,
   sendPaginatePage,
 } from "../shared.js";
@@ -153,11 +159,11 @@ projectRouter.post(
     const proj = await Project.create({
       name: name,
       automergeDocumentId: docHandle.documentId,
-    });
+    } as CreationAttributes<Project>);
     await Invite.create({
       userId: user!.id,
       projectId: proj.id!,
-    });
+    } as CreationAttributes<Invite>);
 
     res.status(STATUS_CREATED).json({ proj });
   }),
@@ -435,6 +441,44 @@ projectRouter.put(
     }
 
     await rm(projectDir, { recursive: true });
+    res.status(STATUS_NO_CONTENT).send();
+  }),
+);
+
+// Sync project file zip to github
+projectRouter.post(
+  "/:id/sync-to-github",
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const { owner, repo, filePath } = req.body;
+
+    const token = await getGithubAccessToken(req);
+    if (!token) {
+      return res.status(STATUS_FORBIDDEN).json({ error: "Unauthorized" });
+    }
+
+    const projectRecord = await Project.findByPk(id, { rejectOnEmpty: true });
+
+    await syncProjectToGitHub(token, projectRecord, owner, repo, filePath);
+    res.status(STATUS_NO_CONTENT).send();
+  }),
+);
+
+// Load project file zip from github
+projectRouter.post(
+  "/:id/load-from-github",
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const { owner, repo, branch, filePath } = req.body;
+
+    const token = await getGithubAccessToken(req);
+    if (!token) {
+      return res.status(STATUS_FORBIDDEN).json({ error: "Unauthorized" });
+    }
+
+    const projectRecord = await Project.findByPk(id, { rejectOnEmpty: true });
+
+    await loadProjectFromGitHub(token, owner, repo, branch, filePath, projectRecord);
     res.status(STATUS_NO_CONTENT).send();
   }),
 );

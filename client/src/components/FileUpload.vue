@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const show = defineModel<boolean>('show', { required: true })
-const checked = defineModel<boolean>('checked', { required: true })
+const checked = defineModel<boolean>('checked', { required: false })
 
 const emit = defineEmits<{
   upload: [selectedFiles: File[]]

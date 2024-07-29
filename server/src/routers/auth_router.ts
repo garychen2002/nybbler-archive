@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Router } from "express";
+import { CreationAttributes } from "sequelize";
 import { Session } from "../models/session.js";
 import { User } from "../models/user.js";
 import {
@@ -34,8 +35,8 @@ authRouter.get(
       },
     });
 
-    const accessToken = response.data.access_token;
-    if (!accessToken) {
+    const access = response.data.access_token;
+    if (!access) {
       return res
         .status(STATUS_AUTHENTICATION_REQUIRED)
         .json({ error: "Invalid authorization code." });
@@ -44,7 +45,7 @@ authRouter.get(
     const githubUser = await axios
       .get("https://api.github.com/user", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${access}`,
         },
       })
       .then((res) => res.data);
@@ -56,12 +57,13 @@ authRouter.get(
       defaults: {
         username: githubUser.login,
         name: githubUser.name,
-      },
+      } as CreationAttributes<User>,
     });
 
     const { token } = await Session.create({
       userId: user.id!,
-    });
+      oauthAccessToken: access,
+    } as CreationAttributes<Session>);
     res.json({ token });
   }),
 );
