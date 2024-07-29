@@ -1,20 +1,19 @@
+import archiver from "archiver";
+import extract from "extract-zip";
+import { createWriteStream } from "fs";
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "fs/promises";
 import { chain, cloneDeep, pick } from "lodash-es";
 import { tmpdir } from "os";
-import { createReadStream, createWriteStream } from 'fs';
-import { join } from "path";
+import path, { join } from "path";
 import { CreationAttributes, Transaction } from "sequelize";
 import { sequelize } from "../datasource.js";
 import { repo } from "./automerge.js";
+import { downloadFileFromGitHub, uploadFileToGitHub } from "./github_api.js";
 import { CollabProject } from "./models/_collab.js";
 import { Binary } from "./models/binary.js";
 import { Function } from "./models/function.js";
 import { Project } from "./models/project.js";
 import { Symbol } from "./models/symbol.js";
-import { uploadFileToGitHub, downloadFileFromGitHub } from "./github_api.js";
-import archiver from "archiver";
-import * as unzipper from "unzipper";
-import path from "path";
 
 export type ExportedProject = {
   name: string;
@@ -216,7 +215,13 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
 }
 
 // Helper to get exported zip and pass to uploader function
-export async function syncProjectToGitHub(token: string, projectRecord: Project, owner: string, repo: string, filePath: string) {
+export async function syncProjectToGitHub(
+  token: string,
+  projectRecord: Project,
+  owner: string,
+  repo: string,
+  filePath: string,
+) {
   const projectDir = await exportProject(projectRecord);
 
   const zipFilePath = path.join(tmpdir(), filePath);
@@ -227,7 +232,14 @@ export async function syncProjectToGitHub(token: string, projectRecord: Project,
 }
 
 // Helper to get downloaded zip, extract and pass to import function
-export async function loadProjectFromGitHub(token: string, owner: string, repo: string, branch: string, filePath: string, replaceProjectRecord: Project) {
+export async function loadProjectFromGitHub(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string,
+  filePath: string,
+  replaceProjectRecord: Project,
+) {
   const zipFileContent = await downloadFileFromGitHub(token, owner, repo, branch, filePath);
 
   const zipFilePath = join(tmpdir(), filePath);
@@ -240,13 +252,9 @@ export async function loadProjectFromGitHub(token: string, owner: string, repo: 
 
 // Zip file extract
 async function unzipFile(zipFilePath: string): Promise<string> {
-  const extractDir = join(tmpdir(), 'extracted');
+  const extractDir = await mkdtemp(join(tmpdir(), "nybbler-unzip-"));
 
-  await mkdir(extractDir, { recursive: true });
-
-  //GPT
-  const zipStream = createReadStream(zipFilePath);
-  await zipStream.pipe(unzipper.Extract({ path: extractDir })).promise();
+  await extract(zipFilePath, { dir: extractDir });
 
   return extractDir;
 }
@@ -254,16 +262,16 @@ async function unzipFile(zipFilePath: string): Promise<string> {
 // Zip helper
 async function zipDirectory(sourceDir: string, outPath: string): Promise<void> {
   //GPT
-  const archive = archiver('zip', { zlib: { level: 9 } });
+  const archive = archiver("zip", { zlib: { level: 9 } });
   const stream = createWriteStream(outPath);
 
   return new Promise((resolve, reject) => {
     archive
       .directory(sourceDir, false)
-      .on('error', (err) => reject(err))
+      .on("error", (err) => reject(err))
       .pipe(stream);
 
-    stream.on('close', () => resolve());
+    stream.on("close", () => resolve());
     archive.finalize();
   });
 }
