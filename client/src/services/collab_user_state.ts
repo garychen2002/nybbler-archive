@@ -68,7 +68,6 @@ export function useCollabUserState<Doc>() {
           // or another user, from whom we have received a recent heartbeat ping.
           now - lastSeen[state.user!.id] < 2000
       )
-      console.log([...userStates.value])
     }, 1000)
   }
 
