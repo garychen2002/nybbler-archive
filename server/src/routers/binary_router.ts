@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { catchErrors, getAuthenticatedUser, STATUS_FORBIDDEN } from "../shared.js";
 import { Binary } from "../models/binary.js";
-import { Project } from "../models/project.js";
-import { User } from "../models/user.js";
-import { Session } from "../models/session.js";
 import { Invite } from "../models/invite.js";
 export const binaryRouter = Router();
 
