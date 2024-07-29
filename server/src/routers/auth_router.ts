@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Router } from "express";
+import { CreationAttributes } from "sequelize";
 import { Session } from "../models/session.js";
 import { User } from "../models/user.js";
 import {
@@ -56,13 +57,14 @@ authRouter.get(
       defaults: {
         username: githubUser.login,
         name: githubUser.name,
-      },
+      } as CreationAttributes<User>,
     });
 
     const { token } = await Session.create({
       userId: user.id!,
-    });
-    res.json({ token, access});
+      oauthAccessToken: access,
+    } as CreationAttributes<Session>);
+    res.json({ token });
   }),
 );
 

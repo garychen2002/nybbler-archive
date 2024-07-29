@@ -18,6 +18,9 @@ export class Session extends Model<Session> {
   @Column(DataType.UUID)
   declare token: string;
 
+  @Column
+  declare oauthAccessToken: string;
+
   @BelongsTo(() => User)
   user!: User;
 
