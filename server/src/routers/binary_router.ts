@@ -14,13 +14,13 @@ binaryRouter.get(
     const user = await getAuthenticatedUser(req);
     const binary = await Binary.findByPk(req.params.binaryId);
     if (binary) {
-      const projectInvites = await Invite.findOne({where: {
-        projectId: binary.projectId,
-        userId: user?.id,
-      },
-    });
-      if (!projectInvites)
-      {
+      const projectInvites = await Invite.findOne({
+        where: {
+          projectId: binary.projectId,
+          userId: user?.id,
+        },
+      });
+      if (!projectInvites) {
         res.status(STATUS_FORBIDDEN).send();
       }
     }
