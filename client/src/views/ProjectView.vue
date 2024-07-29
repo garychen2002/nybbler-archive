@@ -291,14 +291,11 @@ async function annotateLine(line: number, text: string | undefined) {
           </h1>
 
           <div class="ms-auto flex">
-            <ExportButton :projectId="props.projectId" @complete="fetchProject" />
+            <GithubSync :projectId="props.projectId" @complete="fetchProject" />
+            <ExportButton :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
             <ImportUpload :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
             <BinaryUpload :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
           </div>
-        </div>
-
-        <div>
-          <GithubSync :projectId="props.projectId" @complete="fetchProject" />
         </div>
 
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">

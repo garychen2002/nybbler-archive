@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { apiUsers, apiProjects } from '@/services/api'
+import { apiProjects, apiUsers } from '@/services/api'
+import { onMounted, ref } from 'vue'
 import { useToast, VaButton, VaIcon, VaSelect } from 'vuestic-ui'
 
 const props = defineProps<{
@@ -12,26 +12,26 @@ const selectedBranch = ref(null)
 const ownerRef = ref()
 const repos = ref([])
 const branches = ref([])
-const showComponent = ref(false)
+const showModal = ref(false)
 
 const toast = useToast()
 
 async function fetchOwner() {
   try {
-    const res = await apiUsers.get('/me', { responseAs: 'response' });
-    const data = await res.json();
-    ownerRef.value = data.username;
+    const res = await apiUsers.get('/me', { responseAs: 'response' })
+    const data = await res.json()
+    ownerRef.value = data.username
     fetchRepos()
   } catch (error) {
-    console.error('Error fetching user data:', error);
+    console.error('Error fetching user data:', error)
   }
 }
 
 async function fetchRepos() {
   try {
-    const res = await apiUsers.get('/repos', { responseAs: 'response' });
-    const data = await res.json();
-    repos.value = data.map((repo: any) => (repo.name))
+    const res = await apiUsers.get('/repos', { responseAs: 'response' })
+    const data = await res.json()
+    repos.value = data.map((repo: any) => repo.name)
   } catch (error) {
     console.error('Failed to fetch repos:', error)
   }
@@ -39,10 +39,12 @@ async function fetchRepos() {
 
 async function fetchBranches(repo: string) {
   try {
-    const owner = ownerRef.value;
-    const res = await apiUsers.get(`/branches?owner=${owner}&repo=${repo}`, { responseAs: 'response' })
-    const data = await res.json();
-    branches.value = data.map((branch: any) => (branch.name))
+    const owner = ownerRef.value
+    const res = await apiUsers.get(`/branches?owner=${owner}&repo=${repo}`, {
+      responseAs: 'response'
+    })
+    const data = await res.json()
+    branches.value = data.map((branch: any) => branch.name)
   } catch (error) {
     console.error('Failed to fetch branches:', error)
   }
@@ -57,6 +59,8 @@ async function syncProject() {
     return
   }
 
+  showModal.value = false
+
   const toastID = toast.init({ message: `Syncing project to GitHub...`, duration: -1 })
   try {
     await apiProjects.post(`/${props.projectId}/sync-to-github`, {
@@ -64,7 +68,7 @@ async function syncProject() {
       owner: ownerRef.value,
       repo: selectedRepo.value,
       branch: selectedBranch.value,
-      filePath: "nybbler.zip"
+      filePath: 'nybbler.zip'
     })
     toast.notify({ message: `Project synced to GitHub.`, color: 'success' })
   } catch (error) {
@@ -87,6 +91,8 @@ async function loadProject() {
     return
   }
 
+  showModal.value = false
+
   const toastID = toast.init({ message: `Loading project from GitHub...`, duration: -1 })
   try {
     await apiProjects.post(`/${props.projectId}/load-from-github`, {
@@ -94,7 +100,7 @@ async function loadProject() {
       owner: ownerRef.value,
       repo: selectedRepo.value,
       branch: selectedBranch.value,
-      filePath: "nybbler.zip"
+      filePath: 'nybbler.zip'
     })
     toast.notify({ message: `Project loaded from GitHub.`, color: 'success' })
   } catch (error) {
@@ -114,26 +120,36 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <div>
-      <VaButton v-bind="$attrs" @click="showComponent = !showComponent" preset="primary" class="ms-4">
-        GitHub Sync
+  <VaButton v-bind="$attrs" @click="showModal = !showModal" preset="primary" class="ms-4">
+    GitHub sync
+    <VaIcon name="sync" class="ms-2" />
+  </VaButton>
+
+  <VaModal v-model="showModal" size="small" hide-default-actions>
+    <h3 class="va-h6 mb-4">sync with GitHub</h3>
+
+    <VaSelect
+      v-model="selectedRepo"
+      :options="repos"
+      label="select repository"
+      class="w-full"
+      @update:modelValue="fetchBranches"
+    />
+    <div :style="{ marginTop: '0.5rem' }"></div>
+    <VaSelect v-model="selectedBranch" :options="branches" label="select branch" class="w-full" />
+
+    <template #footer>
+      <VaButton class="me-3" preset="secondary" @click="() => (showModal = false)">
+        cancel
       </VaButton>
-    </div>
-    <div v-if="showComponent" :style="{ marginTop: '0.5rem' }">
-      <VaSelect v-model="selectedRepo" :options="repos" label="Select Repository" class="ms-4"
-        @update:modelValue="fetchBranches" />
-      <VaSelect v-model="selectedBranch" :options="branches" label="Select Branch" class="ms-4" />
-      <div :style="{ marginTop: '0.5rem' }">
-        <VaButton v-bind="$attrs" @click="syncProject" preset="primary" class="ms-4">
-          Sync to GitHub
-          <VaIcon name="upload" class="ms-2" />
-        </VaButton>
-        <VaButton v-bind="$attrs" @click="loadProject" preset="secondary" class="ms-4">
-          Load from GitHub
-          <VaIcon name="download" class="ms-2" />
-        </VaButton>
-      </div>
-    </div>
-  </div>
+      <VaButton v-bind="$attrs" @click="syncProject" preset="primary" class="ms-4">
+        commit
+        <VaIcon name="upload" class="ms-2" />
+      </VaButton>
+      <VaButton v-bind="$attrs" @click="loadProject" preset="primary" class="ms-4">
+        pull
+        <VaIcon name="download" class="ms-2" />
+      </VaButton>
+    </template>
+  </VaModal>
 </template>
