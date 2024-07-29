@@ -164,13 +164,19 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
             functionIDs.map(async (functionID) => {
               const functionDir = join(functionsDir, functionID);
 
-              const function_: ExportedFunction = await readJSON(
-                join(functionDir, "function.nybbler.json"),
-              );
-              const functionRecord = await Function.create({
-                disassembly: function_.disassembly,
-              } as CreationAttributes<Function>);
-              functionRecordIDs.set(functionID, functionRecord.id!);
+              try {
+                const function_: ExportedFunction = await readJSON(
+                  join(functionDir, "function.nybbler.json"),
+                );
+
+                const functionRecord = await Function.create({
+                  disassembly: function_.disassembly,
+                } as CreationAttributes<Function>);
+                functionRecordIDs.set(functionID, functionRecord.id!);
+              } catch (error) {
+                console.error(error);
+                return;
+              }
             }),
           );
 
