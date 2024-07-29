@@ -12,6 +12,7 @@ const selectedBranch = ref(null)
 const ownerRef = ref()
 const repos = ref([])
 const branches = ref([])
+const showComponent = ref(false)
 
 const toast = useToast()
 
@@ -114,16 +115,25 @@ onMounted(() => {
 
 <template>
   <div>
-    <VaSelect v-model="selectedRepo" :options="repos" label="Select Repository" class="ms-4"
-      @update:modelValue="fetchBranches" />
-    <VaSelect v-model="selectedBranch" :options="branches" label="Select Branch" class="ms-4" />
-    <VaButton v-bind="$attrs" @click="syncProject" preset="primary" class="ms-4">
-      Sync to GitHub
-      <VaIcon name="upload" class="ms-2" />
-    </VaButton>
-    <VaButton v-bind="$attrs" @click="loadProject" preset="secondary" class="ms-4">
-      Load from GitHub
-      <VaIcon name="download" class="ms-2" />
-    </VaButton>
+    <div>
+      <VaButton v-bind="$attrs" @click="showComponent = !showComponent" preset="primary" class="ms-4">
+        GitHub Sync
+      </VaButton>
+    </div>
+    <div v-if="showComponent" :style="{ marginTop: '0.5rem' }">
+      <VaSelect v-model="selectedRepo" :options="repos" label="Select Repository" class="ms-4"
+        @update:modelValue="fetchBranches" />
+      <VaSelect v-model="selectedBranch" :options="branches" label="Select Branch" class="ms-4" />
+      <div :style="{ marginTop: '0.5rem' }">
+        <VaButton v-bind="$attrs" @click="syncProject" preset="primary" class="ms-4">
+          Sync to GitHub
+          <VaIcon name="upload" class="ms-2" />
+        </VaButton>
+        <VaButton v-bind="$attrs" @click="loadProject" preset="secondary" class="ms-4">
+          Load from GitHub
+          <VaIcon name="download" class="ms-2" />
+        </VaButton>
+      </div>
+    </div>
   </div>
 </template>

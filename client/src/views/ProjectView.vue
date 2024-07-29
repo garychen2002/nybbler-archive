@@ -259,27 +259,19 @@ const statusColor = computed(() => {
             <BinaryUpload :projectId="props.projectId" @complete="fetchProject" class="ms-4" />
           </div>
         </div>
-        <div class="ms-auto flex">
-            <GithubSync :projectId="props.projectId" @complete="fetchProject"/>
+
+        <div>
+          <GithubSync :projectId="props.projectId" @complete="fetchProject" />
         </div>
 
         <VaTabs v-model="selectedBinaryID" class="project-view-main-tabs items-start">
           <template #tabs>
             <VaTab v-for="binary in project.binaries" :key="binary.id" :name="binary.id">
               <span class="me-1">{{ binary.name }}</span>
-              <VaInnerLoading
-                v-if="!analysisStatuses[binary.id]"
-                loading
-                :size="20"
-                class="ms-2 inline-block"
-              />
+              <VaInnerLoading v-if="!analysisStatuses[binary.id]" loading :size="20" class="ms-2 inline-block" />
               <template v-else>
-                <UserBubble
-                  v-for="userState in userStates.filter((state) => state.binaryID === binary.id)"
-                  :key="userState.user!.id"
-                  :user="userState.user!"
-                  class="ms-1"
-                />
+                <UserBubble v-for="userState in userStates.filter((state) => state.binaryID === binary.id)"
+                  :key="userState.user!.id" :user="userState.user!" class="ms-1" />
               </template>
             </VaTab>
           </template>
@@ -296,37 +288,19 @@ const statusColor = computed(() => {
 
                   <div class="flex flex-col">
                     <div class="pb-1">
-                      <div
-                        class="h-[27vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                      >
-                        <SymbolList
-                          :projectId="project.id"
-                          :binaryId="selectedBinary.id"
-                          :symbols="bookmarkedSymbols"
-                          :selectedSymbol="selectedSymbol"
-                          :overrides="symbolOverrides ?? {}"
-                          :userStates="userStates"
-                          isBookmarkList
-                          @bookmark="toggleSymbolBookmarked"
-                          @rename="showRenameSymbol"
-                        />
+                      <div class="h-[27vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2">
+                        <SymbolList :projectId="project.id" :binaryId="selectedBinary.id" :symbols="bookmarkedSymbols"
+                          :selectedSymbol="selectedSymbol" :overrides="symbolOverrides ?? {}" :userStates="userStates"
+                          isBookmarkList @bookmark="toggleSymbolBookmarked" @rename="showRenameSymbol" />
                       </div>
                     </div>
 
                     <div class="pt-1">
-                      <div
-                        class="h-[39.04vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2"
-                      >
-                        <SymbolList
-                          :projectId="project.id"
-                          :binaryId="selectedBinary.id"
-                          :symbols="nonBookmarkedSymbols"
-                          :selectedSymbol="selectedSymbol"
-                          :overrides="symbolOverrides ?? {}"
-                          :userStates="userStates"
-                          @bookmark="toggleSymbolBookmarked"
-                          @rename="showRenameSymbol"
-                        />
+                      <div class="h-[39.04vh] overflow-auto rounded-sm border-2 border-solid border-primary p-2">
+                        <SymbolList :projectId="project.id" :binaryId="selectedBinary.id"
+                          :symbols="nonBookmarkedSymbols" :selectedSymbol="selectedSymbol"
+                          :overrides="symbolOverrides ?? {}" :userStates="userStates" @bookmark="toggleSymbolBookmarked"
+                          @rename="showRenameSymbol" />
                       </div>
                     </div>
                   </div>
@@ -337,11 +311,7 @@ const statusColor = computed(() => {
                 <div class="flex h-full flex-col gap-2 p-4">
                   <h2 class="va-h6">disassembly</h2>
 
-                  <DisassemblyListing
-                    :project="project"
-                    :binary="selectedBinary"
-                    :functionId="functionId"
-                  />
+                  <DisassemblyListing :project="project" :binary="selectedBinary" :functionId="functionId" />
                 </div>
               </pane>
             </splitpanes>
@@ -350,15 +320,10 @@ const statusColor = computed(() => {
       </div>
     </VaInnerLoading>
 
-    <RenameSymbolModal
-      v-model:show="showRenameSymbolModal"
-      :currentName="
-        symbolToRename
-          ? symbolOverrides?.[symbolToRename.address] ?? symbolToRename.name
-          : undefined
-      "
-      @submit="submitRenameSymbol"
-    />
+    <RenameSymbolModal v-model:show="showRenameSymbolModal" :currentName="symbolToRename
+      ? symbolOverrides?.[symbolToRename.address] ?? symbolToRename.name
+      : undefined
+      " @submit="submitRenameSymbol" />
   </PageContent>
 </template>
 
