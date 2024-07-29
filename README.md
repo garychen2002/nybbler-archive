@@ -2,6 +2,9 @@
 
 …is the name of our project and our team.
 
+Deployed URL: https://nybbler.me/    
+Video Demo: 
+
 ## Team
 
 - Ian Gregory <ian.gregory@mail.utoronto.ca>
