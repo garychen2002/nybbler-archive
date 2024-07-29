@@ -128,6 +128,15 @@ onMounted(() => {
   <VaModal v-model="showModal" size="small" hide-default-actions>
     <h3 class="va-h6 mb-4">sync with GitHub</h3>
 
+    <p class="my-2">
+      you must
+      <a href="https://github.com/apps/nybbler-me/installations/new" target="_blank" class="va-link"
+        >install nybbler.me as a GitHub app <VaIcon name="open_in_new"
+      /></a>
+      to use this feature. the repository must live on your personal account and be public, and the
+      target branch must already exist.
+    </p>
+
     <VaSelect
       v-model="selectedRepo"
       :options="repos"
