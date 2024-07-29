@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "fs/promises";
 import { chain, cloneDeep, pick } from "lodash-es";
 import { tmpdir } from "os";
+import { createReadStream } from 'fs';
 import { join } from "path";
 import { CreationAttributes, Transaction } from "sequelize";
 import { sequelize } from "../datasource.js";
@@ -11,6 +12,8 @@ import { Function } from "./models/function.js";
 import { Project } from "./models/project.js";
 import { Symbol } from "./models/symbol.js";
 import { uploadFileToGitHub, downloadFileFromGitHub } from "./github_api.js";
+import archiver from "archiver";
+import * as unzipper from "unzipper";
 
 export type ExportedProject = {
   name: string;
@@ -206,7 +209,10 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
 }
 
 export async function syncProjectToGitHub(token: string, projectRecord: Project, owner: string, repo: string, branch: string) {
-  const projectDir = await exportProject(projectRecord);
+  //const projectDir = await exportProject(projectRecord);
+  //console.log(projectDir);
+
+  const projectDir = "/var/folders/xk/d97pkg2112n8zn37fmhgl3tw0000gn/T/test.zip"
 
   const zipFileContent = await readFile(projectDir);
   await uploadFileToGitHub(token, owner, repo, branch, `${projectRecord.name}.zip`, zipFileContent);
@@ -216,7 +222,21 @@ export async function loadProjectFromGitHub(token: string, owner: string, repo: 
   const zipFileContent = await downloadFileFromGitHub(token, owner, repo, branch, filePath);
 
   const zipFilePath = join(tmpdir(), `${replaceProjectRecord.name}.zip`);
-  await writeFile(zipFilePath, zipFileContent);
 
-  await importProject(zipFilePath, replaceProjectRecord);
+  await writeFile(zipFilePath, zipFileContent);
+  const extract = await unzipFile(zipFilePath);
+
+  await importProject(extract, replaceProjectRecord);
+}
+
+async function unzipFile(zipFilePath: string): Promise<string> {
+  const extractDir = join(tmpdir(), 'extracted');
+
+  await mkdir(extractDir, { recursive: true });
+
+  //GPT
+  const zipStream = createReadStream(zipFilePath);
+  await zipStream.pipe(unzipper.Extract({ path: extractDir })).promise();
+
+  return extractDir;
 }

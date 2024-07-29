@@ -32,8 +32,8 @@ authRouter.get(
       },
     });
 
-    const accessToken = response.data.access_token;
-    if (!accessToken) {
+    const access = response.data.access_token;
+    if (!access) {
       return res
         .status(STATUS_AUTHENTICATION_REQUIRED)
         .json({ error: "Invalid authorization code." });
@@ -42,7 +42,7 @@ authRouter.get(
     const githubUser = await axios
       .get("https://api.github.com/user", {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${access}`,
         },
       })
       .then((res) => res.data);
@@ -60,7 +60,7 @@ authRouter.get(
     const { token } = await Session.create({
       userId: user.id!,
     });
-    res.json({ token });
+    res.json({ token, access});
   }),
 );
 

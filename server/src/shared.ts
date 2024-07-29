@@ -28,16 +28,15 @@ export const RedisConnectionOptions: ConnectionOptions = {
   port: Number(process.env.REDIS_PORT ?? 6379),
 };
 
-export function getBearerToken(req: Request): string | undefined {
+export function getBearerToken(req: Request): string | string[] | undefined {
+  return req.headers["access"];
+}
+
+export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
   const authorization = req.headers["authorization"];
   if (!authorization) return;
 
   const token = authorization.match(/Bearer\s*(.+)/i)?.[1];
-  return token;
-}
-
-export async function getAuthenticatedUser(req: Request): Promise<User | undefined> {
-  const token = getBearerToken(req);
   if (!token) return;
 
   const session = await Session.findOne({ where: { token } });

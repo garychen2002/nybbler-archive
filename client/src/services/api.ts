@@ -17,6 +17,14 @@ export function apiSetToken(token: string) {
   defaults.headers['Authorization'] = `Bearer ${token}`
 }
 
+export function apiSetGitAccess(access: string) {
+  defaults.headers['Access'] = access;
+}
+
 export function apiClearToken() {
   delete defaults.headers['Authorization']
+}
+
+export function apiClearGitAccess() {
+  delete defaults.headers['Access']
 }

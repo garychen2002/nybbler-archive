@@ -1,4 +1,4 @@
-import { apiClearToken, apiSetToken, auth } from './api'
+import { apiClearToken, apiClearGitAccess, apiSetGitAccess, apiSetToken, auth } from './api'
 
 /**
  * Restores existing session from local storage, if one is present.
@@ -15,8 +15,9 @@ export function restoreSession() {
  * @param code OAuth2 authorization code
  */
 export async function signIn(code: string) {
-  const { token } = await auth.get<{ token: string }>('/callback', { query: { code } })
+  const { token, access } = await auth.get<{ token: string, access: string }>('/callback', { query: { code } })
   apiSetToken(token)
+  apiSetGitAccess(access)
   localStorage.setItem('session_token', token)
 }
 
@@ -26,5 +27,6 @@ export async function signIn(code: string) {
 export async function signOut() {
   localStorage.removeItem('session_token')
   apiClearToken()
+  apiClearGitAccess()
   await auth.post<void>('/signout')
 }

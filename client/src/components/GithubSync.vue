@@ -30,8 +30,7 @@ async function fetchRepos() {
   try {
     const res = await apiUsers.get('/repos', { responseAs: 'response' });
     const data = await res.json();
-    //GPT
-    repos.value = data.map((repo: any) => ({ label: repo.name, value: repo.name }))
+    repos.value = data.map((repo: any) => (repo.name))
   } catch (error) {
     console.error('Failed to fetch repos:', error)
   }
@@ -42,8 +41,7 @@ async function fetchBranches(repo: string) {
     const owner = ownerRef.value;
     const res = await apiUsers.get(`/branches?owner=${owner}&repo=${repo}`, { responseAs: 'response' })
     const data = await res.json();
-    //GPT
-    branches.value = data.map((branch: any) => ({ label: branch.name, value: branch.name }))
+    branches.value = data.map((branch: any) => (branch.name))
   } catch (error) {
     console.error('Failed to fetch branches:', error)
   }
@@ -60,7 +58,7 @@ async function syncProject() {
 
   const toastID = toast.init({ message: `Syncing project to GitHub...`, duration: -1 })
   try {
-    await apiProjects.post('/sync', {
+    await apiProjects.post(`/${props.projectId}/sync-to-github`, {
       projectId: props.projectId,
       owner: ownerRef.value,
       repo: selectedRepo.value,
@@ -89,7 +87,7 @@ async function loadProject() {
 
   const toastID = toast.init({ message: `Loading project from GitHub...`, duration: -1 })
   try {
-    await apiProjects.post('/load', {
+    await apiProjects.post(`/${props.projectId}/load-from-github`, {
       projectId: props.projectId,
       owner: ownerRef.value,
       repo: selectedRepo.value,
