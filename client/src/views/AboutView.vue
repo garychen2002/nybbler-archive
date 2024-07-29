@@ -6,7 +6,7 @@ import { shuffle } from 'lodash'
 
 <template>
   <PageContent>
-    <div class="w-4/12">
+    <div class="w-full md:w-8/12 xl:w-4/12">
       <h2 class="va-h2">credits</h2>
 
       <h3 class="va-h3 mb-2">team</h3>
