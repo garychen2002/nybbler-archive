@@ -32,8 +32,7 @@ userRouter.get(
   catchErrors(async (req, res) => {
     const token = await getGithubAccessToken(req);
     if (!token) return null;
-    const response = await getRepos(token);
-    const repos = response.data;
+    const repos = await getRepos(token);
 
     res.json(repos);
   }),
