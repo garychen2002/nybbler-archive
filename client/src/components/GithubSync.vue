@@ -132,11 +132,22 @@ onMounted(() => {
       v-model="selectedRepo"
       :options="repos"
       label="select repository"
+      searchable
+      highlight-matched-text
+      no-options-text="no such repositories"
       class="w-full"
       @update:modelValue="fetchBranches"
     />
     <div :style="{ marginTop: '0.5rem' }"></div>
-    <VaSelect v-model="selectedBranch" :options="branches" label="select branch" class="w-full" />
+    <VaSelect
+      v-model="selectedBranch"
+      :options="branches"
+      label="select branch"
+      searchable
+      highlight-matched-text
+      no-options-text="no such branches"
+      class="w-full"
+    />
 
     <template #footer>
       <VaButton class="me-3" preset="secondary" @click="() => (showModal = false)">
