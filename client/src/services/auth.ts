@@ -6,6 +6,8 @@ import { apiClearToken, apiClearGitAccess, apiSetGitAccess, apiSetToken, auth } 
 export function restoreSession() {
   const token = localStorage.getItem('session_token')
   if (token) apiSetToken(token)
+  const access = localStorage.getItem('access_token')
+  if (access) apiSetGitAccess(access)
 }
 
 /**
@@ -19,6 +21,7 @@ export async function signIn(code: string) {
   apiSetToken(token)
   apiSetGitAccess(access)
   localStorage.setItem('session_token', token)
+  localStorage.setItem('access_token', access)
 }
 
 /**

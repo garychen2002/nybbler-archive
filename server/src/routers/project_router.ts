@@ -321,9 +321,10 @@ projectRouter.put(
   }),
 );
 
+// Sync project file zip to github
 projectRouter.post('/:id/sync-to-github', async (req, res) => {
   const { id } = req.params;
-  const { owner, repo, branch } = req.body;
+  const { owner, repo, filePath } = req.body;
 
   const token = getBearerToken(req);
   if (!token) {
@@ -336,7 +337,7 @@ projectRouter.post('/:id/sync-to-github', async (req, res) => {
   } 
 
   try {
-    await syncProjectToGitHub(token, projectRecord, owner, repo, branch);
+    await syncProjectToGitHub(token, projectRecord, owner, repo, filePath);
     res.status(200).send('Project synced to GitHub successfully');
   } catch (error) {
     console.error(error);
@@ -344,6 +345,7 @@ projectRouter.post('/:id/sync-to-github', async (req, res) => {
   }
 });
 
+// Load project file zip from github
 projectRouter.post('/:id/load-from-github', async (req, res) => {
   const { id } = req.params;
   const { owner, repo, branch, filePath } = req.body;

@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readdir, readFile, writeFile } from "fs/promises";
 import { chain, cloneDeep, pick } from "lodash-es";
 import { tmpdir } from "os";
-import { createReadStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 import { join } from "path";
 import { CreationAttributes, Transaction } from "sequelize";
 import { sequelize } from "../datasource.js";
@@ -14,6 +14,7 @@ import { Symbol } from "./models/symbol.js";
 import { uploadFileToGitHub, downloadFileFromGitHub } from "./github_api.js";
 import archiver from "archiver";
 import * as unzipper from "unzipper";
+import path from "path";
 
 export type ExportedProject = {
   name: string;
@@ -208,20 +209,22 @@ export async function importProject(projectDir: string, replaceProjectRecord: Pr
   );
 }
 
-export async function syncProjectToGitHub(token: string, projectRecord: Project, owner: string, repo: string, branch: string) {
-  //const projectDir = await exportProject(projectRecord);
-  //console.log(projectDir);
+// Helper to get exported zip and pass to uploader function
+export async function syncProjectToGitHub(token: string, projectRecord: Project, owner: string, repo: string, filePath: string) {
+  const projectDir = await exportProject(projectRecord);
 
-  const projectDir = "/var/folders/xk/d97pkg2112n8zn37fmhgl3tw0000gn/T/test.zip"
+  const zipFilePath = path.join(tmpdir(), filePath);
+  await zipDirectory(projectDir, zipFilePath);
 
-  const zipFileContent = await readFile(projectDir);
-  await uploadFileToGitHub(token, owner, repo, branch, `${projectRecord.name}.zip`, zipFileContent);
+  const zipFileContent = await readFile(zipFilePath);
+  await uploadFileToGitHub(token, owner, repo, filePath, zipFileContent);
 }
 
+// Helper to get downloaded zip, extract and pass to import function
 export async function loadProjectFromGitHub(token: string, owner: string, repo: string, branch: string, filePath: string, replaceProjectRecord: Project) {
   const zipFileContent = await downloadFileFromGitHub(token, owner, repo, branch, filePath);
 
-  const zipFilePath = join(tmpdir(), `${replaceProjectRecord.name}.zip`);
+  const zipFilePath = join(tmpdir(), filePath);
 
   await writeFile(zipFilePath, zipFileContent);
   const extract = await unzipFile(zipFilePath);
@@ -229,6 +232,7 @@ export async function loadProjectFromGitHub(token: string, owner: string, repo: 
   await importProject(extract, replaceProjectRecord);
 }
 
+// Zip file extract
 async function unzipFile(zipFilePath: string): Promise<string> {
   const extractDir = join(tmpdir(), 'extracted');
 
@@ -239,4 +243,21 @@ async function unzipFile(zipFilePath: string): Promise<string> {
   await zipStream.pipe(unzipper.Extract({ path: extractDir })).promise();
 
   return extractDir;
+}
+
+// Zip helper
+async function zipDirectory(sourceDir: string, outPath: string): Promise<void> {
+  //GPT
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const stream = createWriteStream(outPath);
+
+  return new Promise((resolve, reject) => {
+    archive
+      .directory(sourceDir, false)
+      .on('error', (err) => reject(err))
+      .pipe(stream);
+
+    stream.on('close', () => resolve());
+    archive.finalize();
+  });
 }

@@ -1,11 +1,13 @@
 import { Octokit } from '@octokit/rest';
 
+// Create octokit instance with user access token for usage with Github API
 function getOctokitInstance(token: string) {
   return new Octokit({
     auth: token,
   });
 }
 
+// Github API request to get repos
 export async function getRepos(token: string) {
   const octokit = getOctokitInstance(token);
   const repos = await octokit.request('GET /user/repos', {
@@ -17,40 +19,36 @@ export async function getRepos(token: string) {
   return repos;
 }
 
-export async function getGitHubRepo(token: string, owner: string, repo: string) {
-  const octokit = getOctokitInstance(token);
-  const response = await octokit.repos.get({ owner, repo });
-  return response.data;
-}
-
-export async function getGitHubBranch(token: string, owner: string, repo: string, branch: string) {
-  const octokit = getOctokitInstance(token);
-  const response = await octokit.repos.getBranch({ owner, repo, branch });
-  return response.data;
-}
-
-export async function uploadFileToGitHub(token: string, owner: string, repo: string, fileContent: Buffer) {
+// Make a request to Github API to upload filepath zip
+export async function uploadFileToGitHub(token: string, owner: string, repo: string, filepath: string, fileContent: Buffer) {
   const octokit = getOctokitInstance(token);
 
-  const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-    owner,
-    repo,
-    path: 'nybbler.zip'
-  });
-  const sha = response.data.sha;
+  let sha;
+  try {
+    const response = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+      owner,
+      repo,
+      path: filepath
+    });
+    if (response) sha = response.data.sha;
+  } catch {
+    sha = null;
+  }
 
   await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
     owner: owner,
     repo: repo,
-    path: 'nybbler.zip',
-    message: 'my commit message',
+    path: filepath,
+    message: 'Upload project zip',
     content: fileContent.toString('base64'),
+    sha: sha || undefined,
     headers: {
       'X-GitHub-Api-Version': '2022-11-28'
     }
   })
 }
 
+// Make a request to Github API to download filepath zip
 export async function downloadFileFromGitHub(token: string, owner: string, repo: string, branch: string, filePath: string) {
   const octokit = getOctokitInstance(token);
 
@@ -75,7 +73,7 @@ export async function downloadFileFromGitHub(token: string, owner: string, repo:
     recursive: 'true',
   });
 
-  const fileBlob = treeData.tree.find((file) => file != null);
+  const fileBlob = treeData.tree.find((file) => file.path === filePath);
 
   if (!fileBlob) {
     throw new Error('File not found in repository.');

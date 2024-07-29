@@ -63,6 +63,7 @@ async function syncProject() {
       owner: ownerRef.value,
       repo: selectedRepo.value,
       branch: selectedBranch.value,
+      filePath: "nybbler.zip"
     })
     toast.notify({ message: `Project synced to GitHub.`, color: 'success' })
   } catch (error) {
@@ -92,6 +93,7 @@ async function loadProject() {
       owner: ownerRef.value,
       repo: selectedRepo.value,
       branch: selectedBranch.value,
+      filePath: "nybbler.zip"
     })
     toast.notify({ message: `Project loaded from GitHub.`, color: 'success' })
   } catch (error) {
