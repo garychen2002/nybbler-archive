@@ -17,6 +17,7 @@ import { Symbol } from "../models/symbol.js";
 import { User } from "../models/user.js";
 import {
   STATUS_CREATED,
+  STATUS_FORBIDDEN,
   STATUS_INVALID_REQUEST,
   STATUS_NO_CONTENT,
   catchErrors,
@@ -72,6 +73,7 @@ projectRouter.get(
 projectRouter.get(
   "/:projectId",
   catchErrors(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
     const projectId = Number(req.params.projectId);
 
     const project = await Project.findByPk(projectId, {
@@ -89,6 +91,18 @@ projectRouter.get(
       rejectOnEmpty: true,
     });
 
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: projectId,
+        userId: user?.id,
+      },
+    });
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
+
     res.json(project);
   }),
 );
@@ -96,9 +110,30 @@ projectRouter.get(
 projectRouter.patch(
   "/:projectId",
   catchErrors(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
     const projectId = Number(req.params.projectId);
+    const project = await Project.findByPk(projectId, {
+      include: [
+        {
+          model: User,
+          as: "invitees",
+          through: { attributes: [] },
+        },
+      ],
+      rejectOnEmpty: true,
+    });
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: projectId,
+        userId: user?.id,
+      },
+    });
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
 
-    const project = await Project.findByPk(projectId, { rejectOnEmpty: true });
     project.update(req.body, { fields: ["name"] });
 
     res.json(project);
@@ -153,10 +188,22 @@ projectRouter.delete(
 projectRouter.get(
   "/:projectId/invitees",
   catchErrors(async (req, res) => {
+    const user = await getAuthenticatedUser(req);
     const projectId = Number(req.params.projectId);
     const beforeId = Number(req.query.before);
     const afterId = Number(req.query.after);
     const limit = Number(req.query.limit);
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: projectId,
+        userId: user?.id,
+      },
+    });
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
 
     // https://sequelize.org/docs/v6/advanced-association-concepts/eager-loading/#complex-where-clauses-at-the-top-level
     const page = await paginate(
@@ -185,13 +232,19 @@ projectRouter.post(
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
     const { userIds } = req.body;
-
-    const proj = await Project.findOne({
+    const user = await getAuthenticatedUser(req);
+    const projectInvites = await Invite.findOne({
       where: {
-        id: projectId,
+        projectId: projectId,
+        userId: user?.id,
       },
-      rejectOnEmpty: true,
     });
+
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
 
     const invitees = await User.findAll({
       where: {
@@ -211,13 +264,19 @@ projectRouter.delete(
   catchErrors(async (req, res) => {
     const { projectId } = req.params;
     const { userId } = req.body;
-
-    const proj = await Project.findOne({
+    const user = await getAuthenticatedUser(req);
+    const projectInvites = await Invite.findOne({
       where: {
-        id: projectId,
+        projectId: projectId,
+        userId: user?.id,
       },
-      rejectOnEmpty: true,
     });
+
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
 
     const invitee = await User.findOne({
       where: {
@@ -243,6 +302,20 @@ projectRouter.post(
       });
     }
 
+    const user = await getAuthenticatedUser(req);
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: req.body.projectId,
+        userId: user?.id,
+      },
+    });
+
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
+
     const binary = await Binary.create({
       name: file.originalname,
       file,
@@ -262,10 +335,23 @@ projectRouter.get(
   "/:projectId/exported",
   catchErrors(async (req, res) => {
     const projectId = Number(req.params.projectId);
-
     const project = await Project.findByPk(projectId, {
       rejectOnEmpty: true,
     });
+    const user = await getAuthenticatedUser(req);
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: projectId,
+        userId: user?.id,
+      },
+    });
+
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
+
     const exportDir = await exportProject(project);
 
     res.contentType("application/zip").attachment(`${project.name}.nybbler.zip`);
@@ -295,10 +381,22 @@ projectRouter.put(
     }
 
     const projectId = Number(req.params.projectId);
+    const user = await getAuthenticatedUser(req);
     const project = await Project.findByPk(projectId, {
       rejectOnEmpty: true,
     });
+    const projectInvites = await Invite.findOne({
+      where: {
+        projectId: projectId,
+        userId: user?.id,
+      },
+    });
 
+    if (!projectInvites) {
+      return res.status(STATUS_FORBIDDEN).json({
+        error: "unauthorized",
+      });
+    }
     const projectDir = await mkdtemp(join(tmpdir(), "nybbler-import-"));
     await extract(file.path, { dir: projectDir });
 
