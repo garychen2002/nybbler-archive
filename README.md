@@ -2,6 +2,9 @@
 
 …is the name of our project and our team.
 
+Deployed URL: https://nybbler.me/    
+Video Demo: 
+
 ## Team
 
 - Ian Gregory <ian.gregory@mail.utoronto.ca>
@@ -24,7 +27,7 @@ nybbler is a real-time collaborative tool for [software reverse engineering](htt
 ## Additional requirements
 
 - "Real-time": Users see each other's edits (to symbol names, inline comments, etc.) as soon as they are made.
-- Long-running task: Backend performs decompilation and/or other analyses using existing open-source tools.
+- Long-running task: Backend performs dissassembly analysis using existing open-source tools.
 
 ## Milestones
 
@@ -47,6 +50,5 @@ The following are the milestones we aim to achieve.
 
 ### Final
 
-- Users can associate manually reconstructed source code with symbols or sections of disassembly.
 - Users can import and export projects as downloadable files.
 - Users can connect a GitHub repo to any project for periodic sync (backup and restore).

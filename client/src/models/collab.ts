@@ -9,14 +9,15 @@ export type CollabBinary = {
   analysisStatus?: CollabBinaryAnalysisStatus
   symbolOverrides?: CollabSymbolOverrides
   bookmarkedAddresses?: CollabBookmarkedAddresses
-  annotations?: CollabAnnotation[]
+  annotations?: CollabAnnotations
 }
 
 export type CollabBinaryAnalysisStatus = undefined | 'failed' | 'complete'
 export type CollabSymbolOverrides = Record<string, string>
 export type CollabBookmarkedAddresses = string[]
+export type CollabAnnotations = Record<string, Record<string, CollabAnnotation>>
 
 export type CollabAnnotation = {
-  address: string
+  userIds: number[]
   text: string
 }

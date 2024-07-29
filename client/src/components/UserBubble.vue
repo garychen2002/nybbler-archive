@@ -27,9 +27,9 @@ const color = computed(() => (Color(backgroundColor.value).isLight() ? '#000' : 
       borderColor,
       backgroundColor
     }"
-    :title="`${user.name} (${user.username})`"
   >
     <span :style="{ color }">{{ user.name[0].toLocaleUpperCase() }}</span>
+    <tippy target="_parent">{{ user.name }} ({{ user.username }})</tippy>
   </div>
 </template>
 

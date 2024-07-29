@@ -11,7 +11,8 @@ import PageContent from '@/components/PageContent.vue'
         <h2 class="va-h2">your sre workspace</h2>
 
         <p class="mt-8 text-xl">
-          nybbler is a real-time collaborative workspace for software reverse engineering.
+          <span class="inline-block">nybbler is a real-time collaborative workspace</span
+          >&nbsp;<span class="inline-block">for software reverse engineering.</span>
         </p>
         <p class="mt-2 text-xl">upload, analyze, understand. together.</p>
       </div>

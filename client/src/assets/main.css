@@ -7,6 +7,8 @@
   font-size: 16px;
   --va-font-family: 'Source Sans 3', sans-serif !important;
   color-scheme: light;
+
+  --va-inner-loading-min-width: initial !important;
 }
 
 * {
@@ -19,4 +21,8 @@
   font-weight: 500 !important;
   font-size: 0.85em !important;
   margin-bottom: 0.5em !important;
+}
+
+.tippy-content {
+  font-family: var(--va-font-family);
 }

@@ -57,14 +57,16 @@ const sortedSymbols = computed(() =>
       }"
     >
       <div
-        class="m-1 flex w-full items-center justify-between rounded p-1"
+        class="m-1 flex w-full items-center rounded p-1"
         :class="{
           'selected-symbol': symbol.address === selectedSymbol?.address
         }"
       >
-        <div class="font-mono">
+        <div class="overflow-hidden text-ellipsis text-nowrap font-mono">
           {{ overrides[symbol.address] ?? symbol.name }}
+        </div>
 
+        <div class="ms-2">
           <UserBubble
             v-for="userState in userStates.filter(
               (state) => state.functionID === symbol.functionId
@@ -75,22 +77,14 @@ const sortedSymbols = computed(() =>
           />
         </div>
 
-        <div class="invisible flex gap-1 group-hover:visible">
-          <VaButton
-            size="small"
-            preset="primary"
-            :title="isBookmarkList ? 'unbookmark' : 'bookmark'"
-            @click.prevent="$emit('bookmark', symbol)"
-          >
+        <div class="invisible ms-auto flex gap-1 group-hover:visible">
+          <VaButton size="small" preset="primary" @click.prevent="$emit('bookmark', symbol)">
             <VaIcon :name="isBookmarkList ? 'bookmark_remove' : 'bookmark_add'" />
+            <tippy target="_parent">{{ isBookmarkList ? 'unbookmark' : 'bookmark' }}</tippy>
           </VaButton>
-          <VaButton
-            size="small"
-            preset="primary"
-            title="rename"
-            @click.prevent="$emit('rename', symbol)"
-          >
+          <VaButton size="small" preset="primary" @click.prevent="$emit('rename', symbol)">
             <VaIcon name="edit" />
+            <tippy target="_parent">rename</tippy>
           </VaButton>
         </div>
       </div>

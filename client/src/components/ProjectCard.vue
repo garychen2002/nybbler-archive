@@ -14,7 +14,7 @@ defineEmits<{
 </script>
 
 <template>
-  <VaCard :to="`/projects/${project.id}`" class="m-4 w-3/12">
+  <VaCard :to="`/projects/${project.id}`" class="m-4 w-6/12 md:w-4/12 lg:w-3/12">
     <div class="va-card__title font-bold">{{ project.name }}</div>
     <VaCardContent class="text-sm" v-if="project.invitees.length">
       <span class="font-semibold">collaborators:</span>

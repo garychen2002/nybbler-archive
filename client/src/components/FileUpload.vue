@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { VaButton, VaFileUpload } from 'vuestic-ui'
+import { VaButton, VaCheckbox, VaFileUpload } from 'vuestic-ui'
 
 const props = defineProps<{
   modalTitle: string
@@ -9,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const show = defineModel<boolean>('show', { required: true })
+const checked = defineModel<boolean>('checked', { required: true })
 
 const emit = defineEmits<{
   upload: [selectedFiles: File[]]
@@ -63,7 +64,14 @@ const submitFile = async () => {
       upload-button-text="choose"
       class="cursor-default"
     />
-
+    <template v-if="modalTitle == 'upload binaries'">
+      <p class="m-0 mt-4 text-sm">your binary will be analyzed server-side.</p>
+      <VaCheckbox
+        v-model="checked"
+        class="mb-6 mt-4"
+        label="also send to VirusTotal for malware scanning"
+      />
+    </template>
     <template #footer>
       <VaButton class="me-3" preset="secondary" @click="() => (show = false)"> cancel </VaButton>
       <VaButton color="primary" @click="submitFile"> upload </VaButton>
