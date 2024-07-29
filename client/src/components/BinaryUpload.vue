@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const showModal = ref(false)
+const checked = ref(false)
 
 const toast = useToast()
 
@@ -24,6 +25,7 @@ async function upload(files: File[]) {
       const formData = new FormData()
       formData.append('binary_file', file)
       formData.append('projectId', props.projectId)
+      formData.append('virustotal', checked.value.toString())
       try {
         await apiProjectsBinaries.post(formData)
         toast.notify({ message: `${file.name} uploaded.`, color: 'success' })
@@ -43,7 +45,7 @@ async function upload(files: File[]) {
 </script>
 
 <template>
-  <FileUpload modalTitle="upload binaries" fileTypes="" v-model:show="showModal" @upload="upload">
+  <FileUpload modalTitle="upload binaries" fileTypes="" v-model:show="showModal" @upload="upload" v-model:checked="checked">
     <template #button>
       <VaButton v-bind="$attrs" @click="() => (showModal = true)">
         upload binaries

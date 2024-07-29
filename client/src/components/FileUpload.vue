@@ -9,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const show = defineModel<boolean>('show', { required: true })
+const checked = defineModel<boolean>('checked', { required: true })
 
 const emit = defineEmits<{
   upload: [selectedFiles: File[]]
@@ -63,7 +64,10 @@ const submitFile = async () => {
       upload-button-text="choose"
       class="cursor-default"
     />
-
+    <template v-if="modalTitle == 'upload binaries'">
+      <input type="checkbox" id="virustotal" :checked=checked @change="$emit('update:checked', !checked)" />
+      <label for="virustotal">Upload to VirusTotal</label>
+    </template>
     <template #footer>
       <VaButton class="me-3" preset="secondary" @click="() => (show = false)"> cancel </VaButton>
       <VaButton color="primary" @click="submitFile"> upload </VaButton>

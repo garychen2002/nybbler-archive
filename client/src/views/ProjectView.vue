@@ -55,6 +55,10 @@ const selectedSymbol = computed(() =>
   selectedBinary.value?.symbols.find((symbol) => symbol.functionId === Number(props.functionId))
 )
 
+const VirusTotalLink = computed(
+  () => 'https://www.virustotal.com/gui/file/' + selectedBinary.value?.virustotalID
+)
+
 const router = useRouter()
 
 // Default binary selection
@@ -279,7 +283,14 @@ const statusColor = computed(() => {
               </template>
             </VaTab>
           </template>
-
+          <template v-if="selectedBinary?.virustotalID">
+            <a :href="`${VirusTotalLink}`" target="_blank" rel="noreferrer">
+              <VaButton preset="primary" class="ms-auto" title="VirusTotal analysis">
+                VirusTotal Analysis
+                <VaIcon name="launch" />
+              </VaButton>
+            </a>
+          </template>
           <div class="ms-4 mt-4 text-sm font-semibold" v-if="selectedBinary">
             status: <span :style="{ color: `var(--va-${statusColor})` }">{{ statusText }}</span>
           </div>
